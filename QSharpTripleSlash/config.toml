@@ -1,0 +1,28 @@
+﻿title = "Q# Triple Slash Configuration"
+
+
+# This section controls the behavior of the logger.
+[Logging]
+
+	# Use this setting to change the level of detail captured by the logger.
+	# The allowed values are:
+	#	"trace"		This will capture everything the program does.
+	#	"debug"		This prints out extra debug info, which can be useful in tracking bugs down.
+	#	"info"		This is the default level. It will print out all useful information messages.
+	#	"warn"		This level will ignore normal info messages, and will only print warnings or errors.
+	#	"error"		This will ignore all messages except for program errors.
+	#	"fatal"		This will ignore all messages, except for errors that cause the extension to crash.
+	#	"off"		This will disable logging entirely.
+	log-level = "debug"
+
+
+# This section controls the way Q# comment blocks are generated.
+[Comment Structure]
+
+	# This is the number of newlines to add between main sections in the comment
+	# (such as Summary, Input, and Output). The default is 1.
+	lines-between-sections = 1
+
+	# This is the number of newlines between the subsections for individual parameters in the
+	# Input section. The default is 1.
+	lines-between-parameters = 1

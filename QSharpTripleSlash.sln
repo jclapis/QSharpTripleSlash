@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29001.49
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpTripleSlash", "QSharpTripleSlash\QSharpTripleSlash.csproj", "{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpParsingWrapper", "QSharpParsingWrapper\QSharpParsingWrapper.csproj", "{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {085F39A8-B191-4D21-B7AA-BC30A0851E55}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,63 @@
+﻿syntax = "proto3";
+package QSharpTripleSlash;
+
+
+// This is used to determine the type of message being sent over the IPC channel.
+enum MessageType
+{
+	// An error message, used when something went wrong during a request
+	MessageType_Error = 0;
+
+	// A request to process a method signature
+	MessageType_MethodSignatureRequest = 1;
+
+	// A processed method signature response
+	MessageType_MethodSignatureResponse = 2;
+}
+
+
+// This is a generic message wrapper, used to contain a message and specify its type
+message Message
+{
+	// The type of the message that's wrapped by this one
+	MessageType Type = 1;
+	
+	// The encoded (wrapped) protobuf message
+	bytes MessageBody = 2;
+}
+
+
+// This is an error message, used to describe an error during a request
+message ErrorMessage
+{
+	// The .NET type of the exception that caused the error
+	string ErrorType = 1;
+
+	// The exception message string
+	string Message = 2;
+
+	// The stack trace from the exception
+	string StackTrace = 3;
+}
+
+
+// This is a request message for processing a Q# method signature
+message MethodSignatureRequest
+{
+	string MethodSignature = 1;
+}
+
+
+// This message is used to wrap the signature of a function or operation in Q# for documentation
+// generation. It contains everything needed to autogenerate Markdown for the method.
+message MethodSignatureResponse
+{
+	// The name of the method
+	string Name = 1;
+
+	// The names of each of the parameters
+	repeated string ParameterNames = 2;
+
+	// True if it returns something, false if it returns Unit (so the output section can be ignored).
+	bool HasReturnType = 3;
+}

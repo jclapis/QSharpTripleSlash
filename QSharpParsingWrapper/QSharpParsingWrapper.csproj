@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\QSharpTripleSlash\Messages.g.cs" Link="Messages.g.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.8.0" />
+    <PackageReference Include="Microsoft.Quantum.Compiler" Version="0.7.1905.3109" />
+    <PackageReference Include="Nett" Version="0.12.0" />
+    <PackageReference Include="NLog" Version="4.6.4" />
+  </ItemGroup>
+
+</Project>
