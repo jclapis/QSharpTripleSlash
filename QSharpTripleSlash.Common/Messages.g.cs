@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace QSharpTripleSlash {
+namespace QSharpTripleSlash.Common {
 
   /// <summary>Holder for reflection information generated from Messages.proto</summary>
   public static partial class MessagesReflection {
@@ -24,24 +24,24 @@ namespace QSharpTripleSlash {
     static MessagesReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5NZXNzYWdlcy5wcm90bxIRUVNoYXJwVHJpcGxlU2xhc2giTAoHTWVzc2Fn",
-            "ZRIsCgRUeXBlGAEgASgOMh4uUVNoYXJwVHJpcGxlU2xhc2guTWVzc2FnZVR5",
-            "cGUSEwoLTWVzc2FnZUJvZHkYAiABKAwiRgoMRXJyb3JNZXNzYWdlEhEKCUVy",
-            "cm9yVHlwZRgBIAEoCRIPCgdNZXNzYWdlGAIgASgJEhIKClN0YWNrVHJhY2UY",
-            "AyABKAkiMQoWTWV0aG9kU2lnbmF0dXJlUmVxdWVzdBIXCg9NZXRob2RTaWdu",
-            "YXR1cmUYASABKAkiVgoXTWV0aG9kU2lnbmF0dXJlUmVzcG9uc2USDAoETmFt",
-            "ZRgBIAEoCRIWCg5QYXJhbWV0ZXJOYW1lcxgCIAMoCRIVCg1IYXNSZXR1cm5U",
-            "eXBlGAMgASgIKnUKC01lc3NhZ2VUeXBlEhUKEU1lc3NhZ2VUeXBlX0Vycm9y",
-            "EAASJgoiTWVzc2FnZVR5cGVfTWV0aG9kU2lnbmF0dXJlUmVxdWVzdBABEicK",
-            "I01lc3NhZ2VUeXBlX01ldGhvZFNpZ25hdHVyZVJlc3BvbnNlEAJiBnByb3Rv",
-            "Mw=="));
+            "Cg5NZXNzYWdlcy5wcm90bxIYUVNoYXJwVHJpcGxlU2xhc2guQ29tbW9uIlMK",
+            "B01lc3NhZ2USMwoEVHlwZRgBIAEoDjIlLlFTaGFycFRyaXBsZVNsYXNoLkNv",
+            "bW1vbi5NZXNzYWdlVHlwZRITCgtNZXNzYWdlQm9keRgCIAEoDCJGCgxFcnJv",
+            "ck1lc3NhZ2USEQoJRXJyb3JUeXBlGAEgASgJEg8KB01lc3NhZ2UYAiABKAkS",
+            "EgoKU3RhY2tUcmFjZRgDIAEoCSIxChZNZXRob2RTaWduYXR1cmVSZXF1ZXN0",
+            "EhcKD01ldGhvZFNpZ25hdHVyZRgBIAEoCSJWChdNZXRob2RTaWduYXR1cmVS",
+            "ZXNwb25zZRIMCgROYW1lGAEgASgJEhYKDlBhcmFtZXRlck5hbWVzGAIgAygJ",
+            "EhUKDUhhc1JldHVyblR5cGUYAyABKAgqjgEKC01lc3NhZ2VUeXBlEhcKE01l",
+            "c3NhZ2VUeXBlX1Vua25vd24QABIVChFNZXNzYWdlVHlwZV9FcnJvchABEiYK",
+            "Ik1lc3NhZ2VUeXBlX01ldGhvZFNpZ25hdHVyZVJlcXVlc3QQAhInCiNNZXNz",
+            "YWdlVHlwZV9NZXRob2RTaWduYXR1cmVSZXNwb25zZRADYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::QSharpTripleSlash.MessageType), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Message), global::QSharpTripleSlash.Message.Parser, new[]{ "Type", "MessageBody" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.ErrorMessage), global::QSharpTripleSlash.ErrorMessage.Parser, new[]{ "ErrorType", "Message", "StackTrace" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.MethodSignatureRequest), global::QSharpTripleSlash.MethodSignatureRequest.Parser, new[]{ "MethodSignature" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.MethodSignatureResponse), global::QSharpTripleSlash.MethodSignatureResponse.Parser, new[]{ "Name", "ParameterNames", "HasReturnType" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::QSharpTripleSlash.Common.MessageType), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.Message), global::QSharpTripleSlash.Common.Message.Parser, new[]{ "Type", "MessageBody" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.ErrorMessage), global::QSharpTripleSlash.Common.ErrorMessage.Parser, new[]{ "ErrorType", "Message", "StackTrace" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureRequest), global::QSharpTripleSlash.Common.MethodSignatureRequest.Parser, new[]{ "MethodSignature" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureResponse), global::QSharpTripleSlash.Common.MethodSignatureResponse.Parser, new[]{ "Name", "ParameterNames", "HasReturnType" }, null, null, null)
           }));
     }
     #endregion
@@ -53,17 +53,21 @@ namespace QSharpTripleSlash {
   /// </summary>
   public enum MessageType {
     /// <summary>
+    /// An unknown / uninitialized message
+    /// </summary>
+    [pbr::OriginalName("MessageType_Unknown")] Unknown = 0,
+    /// <summary>
     /// An error message, used when something went wrong during a request
     /// </summary>
-    [pbr::OriginalName("MessageType_Error")] Error = 0,
+    [pbr::OriginalName("MessageType_Error")] Error = 1,
     /// <summary>
     /// A request to process a method signature
     /// </summary>
-    [pbr::OriginalName("MessageType_MethodSignatureRequest")] MethodSignatureRequest = 1,
+    [pbr::OriginalName("MessageType_MethodSignatureRequest")] MethodSignatureRequest = 2,
     /// <summary>
     /// A processed method signature response
     /// </summary>
-    [pbr::OriginalName("MessageType_MethodSignatureResponse")] MethodSignatureResponse = 2,
+    [pbr::OriginalName("MessageType_MethodSignatureResponse")] MethodSignatureResponse = 3,
   }
 
   #endregion
@@ -80,7 +84,7 @@ namespace QSharpTripleSlash {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::QSharpTripleSlash.MessagesReflection.Descriptor.MessageTypes[0]; }
+      get { return global::QSharpTripleSlash.Common.MessagesReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -109,12 +113,12 @@ namespace QSharpTripleSlash {
 
     /// <summary>Field number for the "Type" field.</summary>
     public const int TypeFieldNumber = 1;
-    private global::QSharpTripleSlash.MessageType type_ = 0;
+    private global::QSharpTripleSlash.Common.MessageType type_ = 0;
     /// <summary>
     /// The type of the message that's wrapped by this one
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::QSharpTripleSlash.MessageType Type {
+    public global::QSharpTripleSlash.Common.MessageType Type {
       get { return type_; }
       set {
         type_ = value;
@@ -222,7 +226,7 @@ namespace QSharpTripleSlash {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Type = (global::QSharpTripleSlash.MessageType) input.ReadEnum();
+            Type = (global::QSharpTripleSlash.Common.MessageType) input.ReadEnum();
             break;
           }
           case 18: {
@@ -246,7 +250,7 @@ namespace QSharpTripleSlash {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::QSharpTripleSlash.MessagesReflection.Descriptor.MessageTypes[1]; }
+      get { return global::QSharpTripleSlash.Common.MessagesReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -443,7 +447,7 @@ namespace QSharpTripleSlash {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::QSharpTripleSlash.MessagesReflection.Descriptor.MessageTypes[2]; }
+      get { return global::QSharpTripleSlash.Common.MessagesReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -576,7 +580,7 @@ namespace QSharpTripleSlash {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::QSharpTripleSlash.MessagesReflection.Descriptor.MessageTypes[3]; }
+      get { return global::QSharpTripleSlash.Common.MessagesReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

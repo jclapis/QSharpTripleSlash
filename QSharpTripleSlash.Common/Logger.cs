@@ -1,80 +1,36 @@
-﻿using Nett;
+﻿/* ========================================================================
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================================== */
+
 using NLog;
-using NLog.Common;
 using NLog.Config;
-using NLog.Layouts;
 using NLog.Targets;
 using System;
 using System.IO;
 
 using NLogger = NLog.Logger;
 
-namespace QSharpParsingWrapper
+namespace QSharpTripleSlash.Common
 {
     /// <summary>
-    /// This class is used for logging events and things that occur on the parsing wrapper side.
+    /// This class is used for logging events and diagnostics.
     /// </summary>
-    internal class Logger
+    public class Logger
     {
         /// <summary>
         /// The NLog Logger backend that actually implements the logging functionality.
         /// </summary>
         private readonly NLogger LoggerImpl;
-
-
-        /// <summary>
-        /// Initializes NLog with the proper target file location and log level.
-        /// </summary>
-        static Logger()
-        {
-            // Set up the target file in the extension's installation directory
-            string assemblyPath = typeof(Logger).Assembly.Location;
-            string baseDir = Path.GetDirectoryName(assemblyPath);
-            string logFile = "${basedir}/../QSharpParsingWrapper.log";
-            LoggingConfiguration logConfig = new LoggingConfiguration();
-            
-            FileTarget logFileTarget = new FileTarget
-            {
-                Name = "LogFile",
-                FileName = logFile,
-                Layout = "${longdate} | ${level:uppercase=true} | ${message}"
-            };
-            logConfig.AddTarget(logFileTarget);
-
-            // Get the log level from the config file
-            LogLevel logLevel = LogLevel.Trace;
-            string errorMessage = null;
-            try
-            {
-                string configFile = Path.Combine(baseDir, "..", "config.toml");
-                if(File.Exists(configFile))
-                {
-                    TomlTable config = Toml.ReadFile(configFile);
-                    TomlTable loggingSection = (TomlTable)config["Logging"];
-                    string configuredLogLevel = ((TomlString)loggingSection["log-level"]).Value;
-                    logLevel = GetLogLevel(configuredLogLevel);
-                }
-                else
-                {
-                    throw new FileNotFoundException("Config file doesn't exist.", configFile);
-                }
-            }
-            catch(Exception ex)
-            {
-                errorMessage = "Error loading log file config setting, defaulting to INFO. Error details: " +
-                    $"{ex.GetType().Name} - {ex.Message}";
-            }
-
-            // Set NLog up with the specified log level
-            logConfig.AddRule(logLevel, LogLevel.Fatal, logFileTarget);
-            LogManager.Configuration = logConfig;
-
-            if (errorMessage != null)
-            {
-                NLogger logger = LogManager.GetCurrentClassLogger();
-                logger.Log(LogLevel.Warn, errorMessage);
-            }
-        }
 
 
         /// <summary>
@@ -95,9 +51,51 @@ namespace QSharpParsingWrapper
         /// <summary>
         /// Creates a new Logger instance.
         /// </summary>
-        public Logger()
+        /// <param name="BaseDirectory">The base installation directory of QSharpTripleSlash</param>
+        /// <param name="LogFileName">The name of the log file to create for this instance</param>
+        public Logger(string BaseDirectory, string LogFileName)
         {
+            string logFile = Path.Combine(BaseDirectory, LogFileName);
+            LoggingConfiguration logConfig = new LoggingConfiguration();
+
+            FileTarget logFileTarget = new FileTarget
+            {
+                Name = "LogFile",
+                FileName = logFile,
+                Layout = "${longdate} | ${level:uppercase=true} | ${message}"
+            };
+            logConfig.AddTarget(logFileTarget);
+
+            // Get the log level from the config file
+            LogLevel logLevel = LogLevel.Info;
+            string errorMessage = null;
+            try
+            {
+                ConfigManager config = new ConfigManager(BaseDirectory);
+                if (config.GetConfigSetting("Logging", "log-level", out string logLevelString))
+                {
+                    logLevel = GetLogLevel(logLevelString);
+                }
+                else
+                {
+                    errorMessage = "Config file didn't contain a log-level setting in the Logging section, defaulting to INFO.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Error loading log file config setting, defaulting to INFO. Error details: " +
+                    $"{ex.GetType().Name} - {ex.Message}";
+            }
+
+            // Set NLog up with the specified log level
+            logConfig.AddRule(logLevel, LogLevel.Fatal, logFileTarget);
+            LogManager.Configuration = logConfig;
             LoggerImpl = LogManager.GetCurrentClassLogger();
+
+            if (errorMessage != null)
+            {
+                Warn(errorMessage);
+            }
         }
 
 

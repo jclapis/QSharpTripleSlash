@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpTripleSlash", "QSharpTripleSlash\QSharpTripleSlash.csproj", "{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpTripleSlash.Common", "QSharpTripleSlash.Common\QSharpTripleSlash.Common.csproj", "{473A5C3A-682D-4CC4-9246-4661A35DC26D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpParsingWrapper", "QSharpParsingWrapper\QSharpParsingWrapper.csproj", "{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QSharpTripleSlash.Parser", "QSharpTripleSlash.Parser\QSharpTripleSlash.Parser.csproj", "{20731593-1F50-4BA8-A38B-A36C76E86016}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpTripleSlash.Extension", "QSharpTripleSlash.Extension\QSharpTripleSlash.Extension.csproj", "{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{473A5C3A-682D-4CC4-9246-4661A35DC26D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{473A5C3A-682D-4CC4-9246-4661A35DC26D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{473A5C3A-682D-4CC4-9246-4661A35DC26D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{473A5C3A-682D-4CC4-9246-4661A35DC26D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20731593-1F50-4BA8-A38B-A36C76E86016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20731593-1F50-4BA8-A38B-A36C76E86016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20731593-1F50-4BA8-A38B-A36C76E86016}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20731593-1F50-4BA8-A38B-A36C76E86016}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F8BC9B8-BDC9-4252-9FE3-B27998BDD2CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA4F7182-BFEB-4D46-8D6E-87ACED55287E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

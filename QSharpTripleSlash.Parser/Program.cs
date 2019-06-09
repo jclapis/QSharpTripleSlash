@@ -1,19 +1,41 @@
-﻿using System;
+﻿/* ========================================================================
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================================== */
+
+using QSharpTripleSlash.Common;
+using System;
+using System.IO;
 using System.IO.Pipes;
 using System.Text;
 
-namespace QSharpParsingWrapper
+namespace QSharpTripleSlash.Parser
 {
+    /// <summary>
+    /// This class holds the entry point for the parsing wrapper application.
+    /// </summary>
     class Program
     {
         /// <summary>
-        /// The main entry point of the wrapper.
+        /// The main entry point of the parsing wrapper.
         /// </summary>
         /// <param name="Args">This must contain only one argument, which is the name of the named pipe that
         /// the VS extension created for IPC.</param>
         static void Main(string[] Args)
         {
-            Logger logger = new Logger();
+            // Create a logger
+            string assemblyPath = typeof(Program).Assembly.Location;
+            string basePath = Path.Combine(Path.GetDirectoryName(assemblyPath), "..");
+            Logger logger = new Logger(basePath, "Parser.log");
 
             // Make sure there's exactly 1 argument
             if(Args.Length != 1)

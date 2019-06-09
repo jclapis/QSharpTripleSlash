@@ -1,18 +1,35 @@
-﻿syntax = "proto3";
-package QSharpTripleSlash;
+﻿/* ========================================================================
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================================== */
+
+syntax = "proto3";
+package QSharpTripleSlash.Common;
 
 
 // This is used to determine the type of message being sent over the IPC channel.
 enum MessageType
 {
+	// An unknown / uninitialized message
+	MessageType_Unknown = 0;
+
 	// An error message, used when something went wrong during a request
-	MessageType_Error = 0;
+	MessageType_Error = 1;
 
 	// A request to process a method signature
-	MessageType_MethodSignatureRequest = 1;
+	MessageType_MethodSignatureRequest = 2;
 
 	// A processed method signature response
-	MessageType_MethodSignatureResponse = 2;
+	MessageType_MethodSignatureResponse = 3;
 }
 
 
