@@ -20,6 +20,10 @@ namespace QSharpTripleSlash
     {
         private static readonly Regex OperationRegex;
 
+        private static readonly Regex FunctionRegex;
+
+        private static readonly Regex NewTypeRegex;
+
         private readonly TripleSlashHandlerProvider Provider;
 
         private readonly IWpfTextView TextView;
@@ -34,6 +38,12 @@ namespace QSharpTripleSlash
         static TripleSlashCompletionCommandHandler()
         {
             OperationRegex = new Regex(@"^(?<Spaces>\s*)(?<Signature>operation\s+.*){",
+                RegexOptions.Singleline | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+
+            FunctionRegex = new Regex(@"^(?<Spaces>\s*)(?<Signature>function\s+.*){",
+                RegexOptions.Singleline | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+
+            NewTypeRegex = new Regex(@"^(?<Spaces>\s*)(?<Signature>newtype\s+.*);",
                 RegexOptions.Singleline | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
         }
 
@@ -155,6 +165,7 @@ namespace QSharpTripleSlash
             return lineText.Trim().Equals("///");
         }
 
+
         private void HandleTripleSlash()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -163,65 +174,150 @@ namespace QSharpTripleSlash
             int oldLine = ts.ActivePoint.Line;
             int oldOffset = ts.ActivePoint.LineCharOffset;
 
-
-            ts.LineDown();
+            // Check to see if the previous line starts with a triple-slash already; if it does, we should probably
+            // just return because there's most likely a docstring already in place.
+            ts.LineUp();
             ts.StartOfLine();
-
-            // Check to see if this is a method type (function or operation)
-
-            // Find the next opening bracket character
-            int currentCharIndex = TextView.Caret.Position.BufferPosition.Position;
-            string fullText = TextView.TextSnapshot.GetText();
-            int nextOpenBracket = fullText.IndexOf('{', currentCharIndex);
-            if(nextOpenBracket != -1)
+            string previousLine = TextView.TextSnapshot.GetLineFromPosition(
+                        TextView.Caret.Position.BufferPosition.Position).GetText();
+            if(previousLine.TrimStart().StartsWith("///"))
             {
-                // Get the potential method signature 
-                string candidateSignature = fullText.Substring(currentCharIndex, nextOpenBracket - currentCharIndex + 1);
-                Match operationMatch = OperationRegex.Match(candidateSignature);
-                if(operationMatch.Success)
-                {
-                    // This is an operation, send it to the parser for processing
-                    string signatureString = operationMatch.Groups["Signature"].Value;
-                    MethodSignatureResponse signature = WrapperChannel.RequestMethodSignatureParse(signatureString);
-
-                    ts.MoveToLineAndOffset(oldLine, oldOffset);
-
-                    string spaces = operationMatch.Groups["Spaces"].Value;
-                    StringBuilder builder = new StringBuilder();
-                    builder.AppendLine("/ # Summary");
-                    builder.Append(spaces + "/// ");
-
-                    if(signature.ParameterNames.Count > 0)
-                    {
-                        builder.AppendLine();
-                        builder.AppendLine(spaces + "/// ");
-                        builder.Append(spaces + "/// # Input");
-                        foreach(string parameterName in signature.ParameterNames)
-                        {
-                            builder.AppendLine();
-                            builder.AppendLine(spaces + $"/// ## {parameterName}");
-                            builder.Append(spaces + "/// ");
-                        }
-                    }
-
-                    if(signature.HasReturnType)
-                    {
-                        builder.AppendLine();
-                        builder.AppendLine(spaces + "/// ");
-                        builder.AppendLine(spaces + "/// # Output");
-                        builder.Append(spaces + "/// ");
-                    }
-
-                    ts.Insert(builder.ToString());
-                    ts.MoveToLineAndOffset(oldLine, oldOffset);
-                    ts.LineDown();
-                    ts.EndOfLine();
-
-                    return;
-                }
+                ts.MoveToLineAndOffset(oldLine, oldOffset);
+                ts.Insert("/");
+                return;
             }
 
+            // Check to see if the next line contains a siganture we can document
+            ts.LineDown();
+            ts.LineDown();
+            ts.StartOfLine();
+            int currentCharIndex = TextView.Caret.Position.BufferPosition.Position;
+            string fullText = TextView.TextSnapshot.GetText();
+
+            // Check if we just triple-slashed a method (a function or an operation)
+            Match methodMatch = GetMethodSignatureMatch(currentCharIndex, fullText);
+            if(methodMatch != null)
+            {
+                string signatureString = methodMatch.Groups["Signature"].Value;
+                string leadingSpaces = methodMatch.Groups["Spaces"].Value;
+
+                // Ask the Q# parser wrapper process to pull out all of the method details so we know what to
+                // put into the documentation comments
+                MethodSignatureResponse signature = WrapperChannel.RequestMethodSignatureParse(signatureString);
+
+                if(signature == null)
+                {
+                    // Something went wrong, or the parser couldn't actually parse the signature
+                    ts.MoveToLineAndOffset(oldLine, oldOffset);
+                    return;
+                }
+
+                // Build the summary section
+                StringBuilder commentBuilder = new StringBuilder();
+                commentBuilder.AppendLine("/ # Summary");
+                commentBuilder.Append(leadingSpaces + "/// ");
+
+                // Add sections for the input parameters
+                if (signature.ParameterNames.Count > 0)
+                {
+                    commentBuilder.AppendLine();
+                    commentBuilder.AppendLine(leadingSpaces + "/// ");
+                    commentBuilder.Append(leadingSpaces + "/// # Input");
+                    foreach (string parameterName in signature.ParameterNames)
+                    {
+                        commentBuilder.AppendLine();
+                        commentBuilder.AppendLine(leadingSpaces + $"/// ## {parameterName}");
+                        commentBuilder.Append(leadingSpaces + "/// ");
+                    }
+                }
+
+                // Add the output section if it has a return type
+                if (signature.HasReturnType)
+                {
+                    commentBuilder.AppendLine();
+                    commentBuilder.AppendLine(leadingSpaces + "/// ");
+                    commentBuilder.AppendLine(leadingSpaces + "/// # Output");
+                    commentBuilder.Append(leadingSpaces + "/// ");
+                }
+
+                // Move to the original cursor position and add the comment block to the code
+                ts.MoveToLineAndOffset(oldLine, oldOffset);
+                ts.Insert(commentBuilder.ToString());
+                ts.MoveToLineAndOffset(oldLine, oldOffset);
+                ts.LineDown();
+                ts.EndOfLine();
+
+                return;
+            }
+
+            // Check if we just triple-slashed a new type
+            Match newtypeMatch = GetNewTypeMatch(currentCharIndex, fullText);
+            if (newtypeMatch != null)
+            {
+                string leadingSpaces = newtypeMatch.Groups["Spaces"].Value;
+
+                // Build the summary section
+                StringBuilder commentBuilder = new StringBuilder();
+                commentBuilder.AppendLine("/ # Summary");
+                commentBuilder.Append(leadingSpaces + "/// ");
+
+                // Move to the original cursor position and add the comment block to the code
+                ts.MoveToLineAndOffset(oldLine, oldOffset);
+                ts.Insert(commentBuilder.ToString());
+                ts.MoveToLineAndOffset(oldLine, oldOffset);
+                ts.LineDown();
+                ts.EndOfLine();
+
+                return;
+            }
+
+            // If this was a triple slash on something else, just add the slash and return.
             ts.MoveToLineAndOffset(oldLine, oldOffset);
+            ts.Insert("/");
+        }
+
+
+        private static Match GetMethodSignatureMatch(int CurrentCaretIndex, string FullText)
+        {
+            int nextOpenBracket = FullText.IndexOf('{', CurrentCaretIndex);
+            if(nextOpenBracket == -1)
+            {
+                return null;
+            }
+
+            // Get the potential method signature and check if it's an operation or a function
+            string candidateSignature = FullText.Substring(CurrentCaretIndex, nextOpenBracket - CurrentCaretIndex + 1);
+            Match operationMatch = OperationRegex.Match(candidateSignature);
+            if(operationMatch.Success)
+            {
+                return operationMatch;
+            }
+            Match functionMatch = FunctionRegex.Match(candidateSignature);
+            if (functionMatch.Success)
+            {
+                return functionMatch;
+            }
+
+            return null;
+        }
+
+
+        private static Match GetNewTypeMatch(int CurrentCaretIndex, string FullText)
+        {
+            int nextSemicolon = FullText.IndexOf(';', CurrentCaretIndex);
+            if (nextSemicolon == -1)
+            {
+                return null;
+            }
+
+            string candidateSignature = FullText.Substring(CurrentCaretIndex, nextSemicolon - CurrentCaretIndex + 1);
+            Match newTypeMatch = NewTypeRegex.Match(candidateSignature);
+            if (newTypeMatch.Success)
+            {
+                return newTypeMatch;
+            }
+
+            return null;
         }
 
     }
