@@ -63,7 +63,7 @@ namespace QSharpTripleSlash.Common
             foreach(Type exportedType in typeof(MessageManager).Assembly.GetExportedTypes())
             {
                 // Look through every public type in this assembly and check if it's a protobuf message 
-                if(typeof(IMessage).IsAssignableFrom(exportedType))
+                if(exportedType != typeof(Message) && typeof(IMessage).IsAssignableFrom(exportedType))
                 {
                     // If it is, try to match it to the entry in MessageType with the same name
                     if(Enum.TryParse(exportedType.Name, out MessageType messageType))

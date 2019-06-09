@@ -116,7 +116,7 @@ namespace QSharpTripleSlash.Parser
 
                         default:
                             Logger.Warn($"Warning: got a message of unknown type ({message.Type}).");
-                            response = new ErrorMessage
+                            response = new Error
                             {
                                 Message = $"Unknown message type ({message.Type})"
                             };
@@ -128,7 +128,7 @@ namespace QSharpTripleSlash.Parser
                     Logger.Error($"Error handling message: {ex.GetType().Name} - {ex.Message}.");
                     Logger.Trace(ex.StackTrace);
 
-                    response = new ErrorMessage
+                    response = new Error
                     {
                         ErrorType = ex.GetType().Name,
                         Message = ex.Message,

@@ -45,7 +45,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CommentCompletionSource.cs" />
+    <None Include="CommentCompletionSource.cs" />
     <Compile Include="MessageServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QSharpTripleSlashPackage.cs" />

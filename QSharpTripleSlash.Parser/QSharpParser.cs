@@ -76,7 +76,7 @@ namespace QSharpTripleSlash.Parser
                 {
                     string warning = $"Warning: tried to parse a method signature, but it wasn't a function or operation. Contents: {MethodSignature}";
                     Logger.Warn(warning);
-                    return new ErrorMessage
+                    return new Error
                     {
                         Message = warning
                     };
@@ -104,7 +104,7 @@ namespace QSharpTripleSlash.Parser
                 Logger.Error($"Error processing method signature: {ex.GetType().Name} - {ex.Message}.");
                 Logger.Trace(ex.StackTrace);
 
-                return new ErrorMessage
+                return new Error
                 {
                     ErrorType = ex.GetType().Name,
                     Message = ex.Message,

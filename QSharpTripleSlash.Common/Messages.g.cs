@@ -26,20 +26,20 @@ namespace QSharpTripleSlash.Common {
           string.Concat(
             "Cg5NZXNzYWdlcy5wcm90bxIYUVNoYXJwVHJpcGxlU2xhc2guQ29tbW9uIlMK",
             "B01lc3NhZ2USMwoEVHlwZRgBIAEoDjIlLlFTaGFycFRyaXBsZVNsYXNoLkNv",
-            "bW1vbi5NZXNzYWdlVHlwZRITCgtNZXNzYWdlQm9keRgCIAEoDCJGCgxFcnJv",
-            "ck1lc3NhZ2USEQoJRXJyb3JUeXBlGAEgASgJEg8KB01lc3NhZ2UYAiABKAkS",
-            "EgoKU3RhY2tUcmFjZRgDIAEoCSIxChZNZXRob2RTaWduYXR1cmVSZXF1ZXN0",
-            "EhcKD01ldGhvZFNpZ25hdHVyZRgBIAEoCSJWChdNZXRob2RTaWduYXR1cmVS",
-            "ZXNwb25zZRIMCgROYW1lGAEgASgJEhYKDlBhcmFtZXRlck5hbWVzGAIgAygJ",
-            "EhUKDUhhc1JldHVyblR5cGUYAyABKAgqjgEKC01lc3NhZ2VUeXBlEhcKE01l",
-            "c3NhZ2VUeXBlX1Vua25vd24QABIVChFNZXNzYWdlVHlwZV9FcnJvchABEiYK",
-            "Ik1lc3NhZ2VUeXBlX01ldGhvZFNpZ25hdHVyZVJlcXVlc3QQAhInCiNNZXNz",
-            "YWdlVHlwZV9NZXRob2RTaWduYXR1cmVSZXNwb25zZRADYgZwcm90bzM="));
+            "bW1vbi5NZXNzYWdlVHlwZRITCgtNZXNzYWdlQm9keRgCIAEoDCI/CgVFcnJv",
+            "chIRCglFcnJvclR5cGUYASABKAkSDwoHTWVzc2FnZRgCIAEoCRISCgpTdGFj",
+            "a1RyYWNlGAMgASgJIjEKFk1ldGhvZFNpZ25hdHVyZVJlcXVlc3QSFwoPTWV0",
+            "aG9kU2lnbmF0dXJlGAEgASgJIlYKF01ldGhvZFNpZ25hdHVyZVJlc3BvbnNl",
+            "EgwKBE5hbWUYASABKAkSFgoOUGFyYW1ldGVyTmFtZXMYAiADKAkSFQoNSGFz",
+            "UmV0dXJuVHlwZRgDIAEoCCqOAQoLTWVzc2FnZVR5cGUSFwoTTWVzc2FnZVR5",
+            "cGVfVW5rbm93bhAAEhUKEU1lc3NhZ2VUeXBlX0Vycm9yEAESJgoiTWVzc2Fn",
+            "ZVR5cGVfTWV0aG9kU2lnbmF0dXJlUmVxdWVzdBACEicKI01lc3NhZ2VUeXBl",
+            "X01ldGhvZFNpZ25hdHVyZVJlc3BvbnNlEANiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::QSharpTripleSlash.Common.MessageType), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.Message), global::QSharpTripleSlash.Common.Message.Parser, new[]{ "Type", "MessageBody" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.ErrorMessage), global::QSharpTripleSlash.Common.ErrorMessage.Parser, new[]{ "ErrorType", "Message", "StackTrace" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.Error), global::QSharpTripleSlash.Common.Error.Parser, new[]{ "ErrorType", "Message", "StackTrace" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureRequest), global::QSharpTripleSlash.Common.MethodSignatureRequest.Parser, new[]{ "MethodSignature" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureResponse), global::QSharpTripleSlash.Common.MethodSignatureResponse.Parser, new[]{ "Name", "ParameterNames", "HasReturnType" }, null, null, null)
           }));
@@ -242,11 +242,11 @@ namespace QSharpTripleSlash.Common {
   /// <summary>
   /// This is an error message, used to describe an error during a request
   /// </summary>
-  public sealed partial class ErrorMessage : pb::IMessage<ErrorMessage> {
-    private static readonly pb::MessageParser<ErrorMessage> _parser = new pb::MessageParser<ErrorMessage>(() => new ErrorMessage());
+  public sealed partial class Error : pb::IMessage<Error> {
+    private static readonly pb::MessageParser<Error> _parser = new pb::MessageParser<Error>(() => new Error());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<ErrorMessage> Parser { get { return _parser; } }
+    public static pb::MessageParser<Error> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -259,14 +259,14 @@ namespace QSharpTripleSlash.Common {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ErrorMessage() {
+    public Error() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ErrorMessage(ErrorMessage other) : this() {
+    public Error(Error other) : this() {
       errorType_ = other.errorType_;
       message_ = other.message_;
       stackTrace_ = other.stackTrace_;
@@ -274,8 +274,8 @@ namespace QSharpTripleSlash.Common {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ErrorMessage Clone() {
-      return new ErrorMessage(this);
+    public Error Clone() {
+      return new Error(this);
     }
 
     /// <summary>Field number for the "ErrorType" field.</summary>
@@ -322,11 +322,11 @@ namespace QSharpTripleSlash.Common {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as ErrorMessage);
+      return Equals(other as Error);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(ErrorMessage other) {
+    public bool Equals(Error other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -394,7 +394,7 @@ namespace QSharpTripleSlash.Common {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(ErrorMessage other) {
+    public void MergeFrom(Error other) {
       if (other == null) {
         return;
       }

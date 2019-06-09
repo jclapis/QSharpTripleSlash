@@ -45,7 +45,7 @@ message Message
 
 
 // This is an error message, used to describe an error during a request
-message ErrorMessage
+message Error
 {
 	// The .NET type of the exception that caused the error
 	string ErrorType = 1;
