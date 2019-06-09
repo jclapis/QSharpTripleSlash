@@ -45,12 +45,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="CommentCompletionSource.cs" />
+    <Compile Include="MarkdownHeaderCompletionSource.cs" />
+    <Compile Include="MarkdownHeaderCompletionSourceProvider.cs" />
     <Compile Include="MessageServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QSharpTripleSlashPackage.cs" />
-    <Compile Include="TripleSlashCompletionCommandHandler.cs" />
-    <Compile Include="TripleSlashHandlerProvider.cs" />
+    <Compile Include="CommentBlockHandler.cs" />
+    <Compile Include="CommentBlockHandlerProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.toml">

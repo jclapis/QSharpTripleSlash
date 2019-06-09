@@ -19,17 +19,16 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace QSharpTripleSlash.Extension
 {
     [Export(typeof(IVsTextViewCreationListener))]
-    [Name("Q# Triple Slash Completion Handler")]
+    [Name("Q# Triple Slash Comment Handler")]
     [ContentType("code++.qsharp")]
     [ContentType("Q#")]
     [TextViewRole(PredefinedTextViewRoles.Editable)]
-    internal class TripleSlashHandlerProvider : IVsTextViewCreationListener
+    internal class CommentBlockHandlerProvider : IVsTextViewCreationListener
     {
         private readonly MessageServer WrapperChannel;
 
@@ -45,14 +44,13 @@ namespace QSharpTripleSlash.Extension
         [Import]
         protected IContentTypeRegistryService ContentTypeRegistryService { get; set; }
 
-        public TripleSlashHandlerProvider()
+        public CommentBlockHandlerProvider()
         {
             WrapperChannel = MessageServer.Instance;
         }
 
         public void VsTextViewCreated(IVsTextView TextViewAdapter)
         {
-            IEnumerable<IContentType> types = ContentTypeRegistryService.ContentTypes;
             try
             {
                 IWpfTextView textView = AdapterService.GetWpfTextView(TextViewAdapter);
@@ -63,7 +61,7 @@ namespace QSharpTripleSlash.Extension
 
                 textView.Properties.GetOrCreateSingletonProperty(() =>
                 {
-                    return new TripleSlashCompletionCommandHandler(TextViewAdapter, textView, this, WrapperChannel);
+                    return new CommentBlockHandler(TextViewAdapter, textView, this, WrapperChannel);
                 });
             }
             catch (Exception)

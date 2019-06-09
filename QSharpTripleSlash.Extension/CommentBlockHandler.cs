@@ -15,6 +15,7 @@
 using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
@@ -28,7 +29,7 @@ using System.Text.RegularExpressions;
 
 namespace QSharpTripleSlash.Extension
 {
-    internal class TripleSlashCompletionCommandHandler : IOleCommandTarget
+    internal class CommentBlockHandler : IOleCommandTarget
     {
         private static readonly Regex OperationRegex;
 
@@ -36,7 +37,7 @@ namespace QSharpTripleSlash.Extension
 
         private static readonly Regex NewTypeRegex;
 
-        private readonly TripleSlashHandlerProvider Provider;
+        private readonly CommentBlockHandlerProvider Provider;
 
         private readonly IWpfTextView TextView;
 
@@ -46,8 +47,10 @@ namespace QSharpTripleSlash.Extension
 
         private readonly MessageServer WrapperChannel;
 
+        private ICompletionSession MarkdownCompletionSession;
 
-        static TripleSlashCompletionCommandHandler()
+
+        static CommentBlockHandler()
         {
             OperationRegex = new Regex(@"^(?<Spaces>\s*)(?<Signature>operation\s+.*){",
                 RegexOptions.Singleline | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
@@ -60,8 +63,8 @@ namespace QSharpTripleSlash.Extension
         }
 
 
-        public TripleSlashCompletionCommandHandler(IVsTextView TextViewAdapter, IWpfTextView TextView,
-            TripleSlashHandlerProvider Provider, MessageServer WrapperChannel)
+        public CommentBlockHandler(IVsTextView TextViewAdapter, IWpfTextView TextView,
+            CommentBlockHandlerProvider Provider, MessageServer WrapperChannel)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -108,23 +111,43 @@ namespace QSharpTripleSlash.Extension
                     return NextCommandHandler.Exec(ref CommandGroupGuid, CommandID, ExecOptions, InputArgs, OutputArgs);
                 }
 
-                char? typedChar = null;
+                char typedChar = char.MinValue;
 
-                // Check if this is a "character typed" command
+                // Get the character that was just typed (if there was one)
                 if (CommandGroupGuid == VSConstants.VSStd2K &&
                     CommandID == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
                 {
                     typedChar = (char)Marshal.GetObjectForNativeVariant<ushort>(InputArgs);
-                    if (typedChar == '/' && Dte != null)
+                }
+
+                // Check if the user just entered a triple slash
+                if (typedChar == '/' && Dte != null)
+                {
+                    if (UserTypedTripleSlash())
                     {
-                        if (UserTypedTripleSlash())
+                        HandleTripleSlash();
+                        return VSConstants.S_OK;
+                    }
+                }
+
+                // Check if there's an autocomplete session open and the user just tried to accept one
+                // of the autocomplete suggestions
+                else if(MarkdownCompletionSession?.IsDismissed == false)
+                {
+                    if (CommandID == (uint)VSConstants.VSStd2KCmdID.RETURN ||
+                        CommandID == (uint)VSConstants.VSStd2KCmdID.TAB)
+                    {
+                        if (MarkdownCompletionSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                         {
-                            HandleTripleSlash();
+                            string selectedCompletion = MarkdownCompletionSession.SelectedCompletionSet.SelectionStatus.Completion.DisplayText;
+                            MarkdownCompletionSession.Commit();
                             return VSConstants.S_OK;
                         }
                     }
                 }
-                else if(CommandGroupGuid == VSConstants.VSStd2K && 
+
+                // Handle the user pressing enter inside of a comment
+                else if (CommandGroupGuid == VSConstants.VSStd2K && 
                         CommandID == (uint)VSConstants.VSStd2KCmdID.RETURN)
                 {
                     if(HandleReturn())
@@ -133,7 +156,43 @@ namespace QSharpTripleSlash.Extension
                     }
                 }
 
+                // If none of the above happened, pass the event onto the regular handler.
                 int nextCommandResult = NextCommandHandler.Exec(ref CommandGroupGuid, CommandID, ExecOptions, InputArgs, OutputArgs);
+
+                // Check to see if we need to start an autocomplete session, if the user typed "#"
+                if(typedChar == '#')
+                {
+                    string currentLine = TextView.TextSnapshot.GetLineFromPosition(
+                                TextView.Caret.Position.BufferPosition.Position).GetText();
+                    if (currentLine.TrimStart().StartsWith("/// #"))
+                    {
+                        // Create a new autocompletion session if there isn't one already
+                        if (MarkdownCompletionSession == null || MarkdownCompletionSession.IsDismissed)
+                        {
+                            if (this.StartMarkdownAutocompleteSession())
+                            {
+                                MarkdownCompletionSession.SelectedCompletionSet.SelectBestMatch();
+                                MarkdownCompletionSession.SelectedCompletionSet.Recalculate();
+                                return VSConstants.S_OK;
+                            }
+                        }
+                    }
+                }
+
+                // Check if there's an active autocomplete session, and the user just modified the text
+                // in the editor
+                else if(CommandID == (uint)VSConstants.VSStd2KCmdID.BACKSPACE ||
+                        CommandID == (uint)VSConstants.VSStd2KCmdID.DELETE || 
+                        char.IsLetter(typedChar))
+                {
+                    if(MarkdownCompletionSession?.IsDismissed == false)
+                    {
+                        MarkdownCompletionSession.SelectedCompletionSet.SelectBestMatch();
+                        MarkdownCompletionSession.SelectedCompletionSet.Recalculate();
+                        return VSConstants.S_OK;
+                    }
+                }
+
                 return nextCommandResult;
             }
             catch (Exception)
@@ -313,6 +372,42 @@ namespace QSharpTripleSlash.Extension
         }
 
 
+        private bool StartMarkdownAutocompleteSession()
+        {
+            try
+            {
+                if(MarkdownCompletionSession != null)
+                {
+                    return false;
+                }
+
+                SnapshotPoint? caretPoint = TextView.Caret.Position.Point.GetPoint(
+                    textBuffer => (!textBuffer.ContentType.IsOfType("projection")), PositionAffinity.Predecessor);
+                MarkdownCompletionSession = Provider.CompletionBroker.CreateCompletionSession(
+                    TextView, caretPoint.Value.Snapshot.CreateTrackingPoint(caretPoint.Value.Position, PointTrackingMode.Positive), true);
+
+                // subscribe to the Dismissed event on the session 
+                MarkdownCompletionSession.Dismissed += MarkdownCompletionSession_Dismissed; ;
+                MarkdownCompletionSession.Start();
+                return true;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
+
+
+        private void MarkdownCompletionSession_Dismissed(object sender, EventArgs e)
+        {
+            if(MarkdownCompletionSession != null)
+            {
+                MarkdownCompletionSession.Dismissed -= MarkdownCompletionSession_Dismissed;
+                MarkdownCompletionSession = null;
+            }
+        }
+
+
         private static Match GetMethodSignatureMatch(int CurrentCaretIndex, string FullText)
         {
             int nextOpenBracket = FullText.IndexOf('{', CurrentCaretIndex);
@@ -355,6 +450,5 @@ namespace QSharpTripleSlash.Extension
 
             return null;
         }
-
     }
 }
