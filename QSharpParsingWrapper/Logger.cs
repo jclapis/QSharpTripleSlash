@@ -1,5 +1,6 @@
 ﻿using Nett;
 using NLog;
+using NLog.Common;
 using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
@@ -29,17 +30,19 @@ namespace QSharpParsingWrapper
             // Set up the target file in the extension's installation directory
             string assemblyPath = typeof(Logger).Assembly.Location;
             string baseDir = Path.GetDirectoryName(assemblyPath);
-            string logFile = Path.Combine(baseDir, "..", "QSharpParsingWrapper.log");
-            LogManager.Configuration = new LoggingConfiguration();
+            string logFile = "${basedir}/../QSharpParsingWrapper.log";
+            LoggingConfiguration logConfig = new LoggingConfiguration();
+            
             FileTarget logFileTarget = new FileTarget
             {
+                Name = "LogFile",
                 FileName = logFile,
-                Layout = new SimpleLayout("${longdate} | ${level:uppercase=true} | ${message}")
+                Layout = "${longdate} | ${level:uppercase=true} | ${message}"
             };
-            LogManager.Configuration.AddTarget("LogFile", logFileTarget);
+            logConfig.AddTarget(logFileTarget);
 
             // Get the log level from the config file
-            LogLevel logLevel = LogLevel.Info;
+            LogLevel logLevel = LogLevel.Trace;
             string errorMessage = null;
             try
             {
@@ -63,10 +66,10 @@ namespace QSharpParsingWrapper
             }
 
             // Set NLog up with the specified log level
-            LogManager.Configuration.LoggingRules.Add(
-                new LoggingRule("*", logLevel, logFileTarget));
+            logConfig.AddRule(logLevel, LogLevel.Fatal, logFileTarget);
+            LogManager.Configuration = logConfig;
 
-            if(errorMessage != null)
+            if (errorMessage != null)
             {
                 NLogger logger = LogManager.GetCurrentClassLogger();
                 logger.Log(LogLevel.Warn, errorMessage);

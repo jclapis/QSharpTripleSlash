@@ -164,7 +164,7 @@ namespace QSharpParsingWrapper
         /// <returns>True if it returns something, false if the return type is Unit.</returns>
         private bool CheckForReturnType(CallableSignature MethodSignature)
         {
-            return MethodSignature.ReturnType.Type == QsTypeKind<QsType, QsSymbol, QsSymbol, Affiliation>.UnitType;
+            return MethodSignature.ReturnType.Type != QsTypeKind<QsType, QsSymbol, QsSymbol, Affiliation>.UnitType;
         }
 
     }

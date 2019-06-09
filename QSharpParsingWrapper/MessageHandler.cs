@@ -116,7 +116,15 @@ namespace QSharpParsingWrapper
                 {
                     if(response != null)
                     {
-                        byte[] responseBuffer = response.ToByteArray();
+                        // TODO: Pull this out into its own messaging library, it will get impossible to maintain like this
+                        // if more messages get added
+                        Message wrapperMessage = new Message
+                        {
+                            Type = (response is ErrorMessage ? MessageType.Error : MessageType.MethodSignatureResponse),
+                            MessageBody = response.ToByteString()
+                        };
+
+                        byte[] responseBuffer = wrapperMessage.ToByteArray();
                         byte[] responseLength = BitConverter.GetBytes(responseBuffer.Length);
                         Stream.Write(responseLength);
                         Stream.Flush();
