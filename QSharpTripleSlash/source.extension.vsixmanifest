@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-  <Metadata>
-    <Identity Id="QSharpTripleSlash.3883338e-74c8-44e3-a2c7-9c03034db9f0" Version="1.0" Language="en-US" Publisher="Joe Clapis" />
-    <DisplayName>QSharpTripleSlash</DisplayName>
-    <Description>Empty VSIX Project.</Description>
-  </Metadata>
-  <Installation>
-    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
-  </Installation>
-  <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-  </Dependencies>
-  <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
-  </Prerequisites>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-  </Assets>
+    <Metadata>
+        <Identity Id="QSharpTripleSlash.3883338e-74c8-44e3-a2c7-9c03034db9f0" Version="0.1" Language="en-US" Publisher="Joe Clapis" />
+        <DisplayName>QSharpTripleSlash</DisplayName>
+        <Description xml:space="preserve">Documentation comment (triple slash comment) autocompletion for Q# projects.</Description>
+        <MoreInfo>https://github.com/jclapis/QSharpTripleSlash</MoreInfo>
+        <License>LICENSE.txt</License>
+        <Tags>Q#, QDK, Quantum, Quantum Development Kit,</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    </Assets>
 </PackageManifest>

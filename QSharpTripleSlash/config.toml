@@ -17,7 +17,7 @@
 
 
 # This section controls the way Q# comment blocks are generated.
-[Comment Structure]
+[Comment-Structure]
 
 	# This is the number of newlines to add between main sections in the comment
 	# (such as Summary, Input, and Output). The default is 1.
