@@ -91,8 +91,8 @@
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   
   <ItemGroup>
-    <Content Include="$(SolutionDir)QSharpParsingWrapper\bin\Release\netcoreapp2.1\**\*.*">
-      <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+    <Content Include="$(SolutionDir)QSharpParsingWrapper\bin\Release\netcoreapp2.1\publish\**\*.*">
+      <Link>QSharpParsingWrapper\%(RecursiveDir)%(FileName)%(Extension)</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>
