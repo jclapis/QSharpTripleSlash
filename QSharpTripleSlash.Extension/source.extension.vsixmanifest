@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="QSharpTripleSlash.3883338e-74c8-44e3-a2c7-9c03034db9f0" Version="0.3.0" Language="en-US" Publisher="Joe Clapis" />
+        <Identity Id="QSharpTripleSlash.3feb5748-68a0-42dc-9e92-75227662f626" Version="0.3.0" Language="en-US" Publisher="Joe Clapis" />
         <DisplayName>QSharpTripleSlash</DisplayName>
         <Description xml:space="preserve">Documentation comment (triple slash comment) autocompletion for Q# projects.</Description>
         <MoreInfo>https://github.com/jclapis/QSharpTripleSlash</MoreInfo>
