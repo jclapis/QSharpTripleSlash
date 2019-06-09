@@ -103,16 +103,22 @@ namespace QSharpTripleSlash
                     CommandID == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
                 {
                     typedChar = (char)Marshal.GetObjectForNativeVariant<ushort>(InputArgs);
-                }
-
-                if (typedChar == '/' && Dte != null)
-                {
-                    if (UserTypedTripleSlash())
+                    if (typedChar == '/' && Dte != null)
                     {
-                        HandleTripleSlash();
+                        if (UserTypedTripleSlash())
+                        {
+                            HandleTripleSlash();
+                            return VSConstants.S_OK;
+                        }
+                    }
+                }
+                else if(CommandGroupGuid == VSConstants.VSStd2K && 
+                        CommandID == (uint)VSConstants.VSStd2KCmdID.RETURN)
+                {
+                    if(HandleReturn())
+                    {
                         return VSConstants.S_OK;
                     }
-                    //return VSConstants.S_OK;
                 }
 
                 int nextCommandResult = NextCommandHandler.Exec(ref CommandGroupGuid, CommandID, ExecOptions, InputArgs, OutputArgs);
@@ -274,6 +280,24 @@ namespace QSharpTripleSlash
             // If this was a triple slash on something else, just add the slash and return.
             ts.MoveToLineAndOffset(oldLine, oldOffset);
             ts.Insert("/");
+        }
+
+
+        private bool HandleReturn()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            TextSelection ts = Dte.ActiveDocument.Selection as TextSelection;
+
+            string currentLine = TextView.TextSnapshot.GetLineFromPosition(
+                        TextView.Caret.Position.BufferPosition.Position).GetText();
+            if (currentLine.TrimStart().StartsWith("///"))
+            {
+                string leadingSpaces = currentLine.Replace(currentLine.TrimStart(), "");
+                ts.Insert(Environment.NewLine + leadingSpaces + "/// ");
+                return true;
+            }
+            return false;
         }
 
 

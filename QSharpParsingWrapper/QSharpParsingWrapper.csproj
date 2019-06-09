@@ -3,6 +3,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>0.2.0</Version>
+    <Company />
+    <Authors>Joe Clapis</Authors>
+    <Description>A simple .NET Core application that communicates with the QSharpTripleSlash extension to provide access to the Q# text processor, for parsing support.</Description>
   </PropertyGroup>
 
   <ItemGroup>
