@@ -285,43 +285,38 @@ namespace QSharpTripleSlash.Extension
                 string signatureString = methodMatch.Groups["Signature"].Value;
                 string leadingSpaces = methodMatch.Groups["Spaces"].Value;
 
-                // Ask the Q# parser wrapper process to pull out all of the method details so we know what to
-                // put into the documentation comments
-                MethodSignatureResponse signature = WrapperChannel.RequestMethodSignatureParse(signatureString);
-
-                if(signature == null)
-                {
-                    // Something went wrong, or the parser couldn't actually parse the signature
-                    ts.MoveToLineAndOffset(oldLine, oldOffset);
-                    return;
-                }
-
-                // Build the summary section
+                // Build the summary section, which is going to go in no matter what
                 StringBuilder commentBuilder = new StringBuilder();
                 commentBuilder.AppendLine("/ # Summary");
                 commentBuilder.Append(leadingSpaces + "/// ");
 
-                // Add sections for the input parameters
-                if (signature.ParameterNames.Count > 0)
+                // Ask the Q# parser wrapper process to pull out all of the method details so we know what to
+                // put into the documentation comments, and add them if parsing succeeded
+                MethodSignatureResponse signature = WrapperChannel.RequestMethodSignatureParse(signatureString);
+                if (signature != null)
                 {
-                    commentBuilder.AppendLine();
-                    commentBuilder.AppendLine(leadingSpaces + "/// ");
-                    commentBuilder.Append(leadingSpaces + "/// # Input");
-                    foreach (string parameterName in signature.ParameterNames)
+                    // Add sections for the input parameters
+                    if (signature.ParameterNames.Count > 0)
                     {
                         commentBuilder.AppendLine();
-                        commentBuilder.AppendLine(leadingSpaces + $"/// ## {parameterName}");
+                        commentBuilder.AppendLine(leadingSpaces + "/// ");
+                        commentBuilder.Append(leadingSpaces + "/// # Input");
+                        foreach (string parameterName in signature.ParameterNames)
+                        {
+                            commentBuilder.AppendLine();
+                            commentBuilder.AppendLine(leadingSpaces + $"/// ## {parameterName}");
+                            commentBuilder.Append(leadingSpaces + "/// ");
+                        }
+                    }
+
+                    // Add the output section if it has a return type
+                    if (signature.HasReturnType)
+                    {
+                        commentBuilder.AppendLine();
+                        commentBuilder.AppendLine(leadingSpaces + "/// ");
+                        commentBuilder.AppendLine(leadingSpaces + "/// # Output");
                         commentBuilder.Append(leadingSpaces + "/// ");
                     }
-                }
-
-                // Add the output section if it has a return type
-                if (signature.HasReturnType)
-                {
-                    commentBuilder.AppendLine();
-                    commentBuilder.AppendLine(leadingSpaces + "/// ");
-                    commentBuilder.AppendLine(leadingSpaces + "/// # Output");
-                    commentBuilder.Append(leadingSpaces + "/// ");
                 }
 
                 // Move to the original cursor position and add the comment block to the code
@@ -457,5 +452,6 @@ namespace QSharpTripleSlash.Extension
 
             return null;
         }
+
     }
 }

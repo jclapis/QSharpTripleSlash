@@ -13,7 +13,7 @@
 	#	"error"		This will ignore all messages except for program errors.
 	#	"fatal"		This will ignore all messages, except for errors that cause the extension to crash.
 	#	"off"		This will disable logging entirely.
-	log-level = "debug"
+	log-level = "trace"
 
 
 # This section controls the way Q# comment blocks are generated.
@@ -26,3 +26,11 @@
 	# This is the number of newlines between the subsections for individual parameters in the
 	# Input section. The default is 1.
 	lines-between-parameters = 1
+
+
+# This section controls the Q# parser application that the extension uses to parse Q# code.
+[Parser]
+
+	# This is how long (in milliseconds) the extension will wait for the Q# parser application
+	# to connect to it before deciding that it was a failure, and something went wrong.
+	parser-timeout = 3000

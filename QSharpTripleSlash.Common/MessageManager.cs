@@ -94,7 +94,7 @@ namespace QSharpTripleSlash.Common
         /// <param name="Message">The message to wrap</param>
         /// <returns>A <see cref="Message"/> object that wraps the provided message and specifies what
         /// type it is</returns>
-        public static Message WrapMessage(IMessage Message)
+        public Message WrapMessage(IMessage Message)
         {
             if(!MessageTypeLookup.TryGetValue(Message.GetType(), out MessageType messageType))
             {
