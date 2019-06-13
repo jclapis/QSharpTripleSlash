@@ -20,7 +20,6 @@
  * ======================================================================== */
 
 using EnvDTE;
-using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -36,27 +35,78 @@ using System.Text.RegularExpressions;
 
 namespace QSharpTripleSlash.Extension
 {
+    /// <summary>
+    /// This class is responsible for all of the parsing and autocomplete logic in a Q# file.
+    /// Think of this as the "main" class in the extension.
+    /// </summary>
     internal class CommentBlockHandler : IOleCommandTarget
     {
+        /// <summary>
+        /// A very loose regular expresion to check if a block of text is a Q# operation signature.
+        /// This could let in a lot of false negatives, but it shouldn't omit any true positives.
+        /// </summary>
         private static readonly Regex OperationRegex;
 
+
+        /// <summary>
+        /// A very loose regular expresion to check if a block of text is a Q# function signature.
+        /// This could let in a lot of false negatives, but it shouldn't omit any true positives.
+        /// </summary>
         private static readonly Regex FunctionRegex;
 
+
+        /// <summary>
+        /// A regular expresion to check if a block of text is a Q# newtype signature.
+        /// </summary>
         private static readonly Regex NewTypeRegex;
 
+
+        /// <summary>
+        /// A logger for recording event information
+        /// </summary>
+        private readonly Logger Logger;
+
+
+        /// <summary>
+        /// The provider that created this instance
+        /// </summary>
         private readonly CommentBlockHandlerProvider Provider;
 
+
+        /// <summary>
+        /// The text view of the code editor containing the Q# file being edited
+        /// </summary>
         private readonly IWpfTextView TextView;
 
+        
+        /// <summary>
+        /// A handle to the Visual Studio COM API for modifying the code editor
+        /// </summary>
         private readonly DTE Dte;
 
+
+        /// <summary>
+        /// The next command handler in the chain, used to defer commands if this extension
+        /// doesn't care about them
+        /// </summary>
         private readonly IOleCommandTarget NextCommandHandler;
 
-        private readonly MessageServer WrapperChannel;
 
+        /// <summary>
+        /// The message handler for communicating with the Q# parser application
+        /// </summary>
+        private readonly MessageServer Messenger;
+
+
+        /// <summary>
+        /// The active autocompletion session, using when suggesting Markdown headers
+        /// </summary>
         private ICompletionSession MarkdownCompletionSession;
 
 
+        /// <summary>
+        /// Initializes the regular expressions used for finding relevant Q# code signatures.
+        /// </summary>
         static CommentBlockHandler()
         {
             OperationRegex = new Regex(@"^(?<Spaces>\s*)(?<Signature>operation\s+.*){",
@@ -70,20 +120,114 @@ namespace QSharpTripleSlash.Extension
         }
 
 
-        public CommentBlockHandler(IVsTextView TextViewAdapter, IWpfTextView TextView,
-            CommentBlockHandlerProvider Provider, MessageServer WrapperChannel)
+        /// <summary>
+        /// Checks to see if the given block of text appears to be a Q# function or an operation.
+        /// </summary>
+        /// <param name="CurrentCaretIndex">The current location of the caret in the code editor
+        /// (in terms of an absolute offset of the editor's text buffer)</param>
+        /// <param name="FullText">The entire contents of the code editor</param>
+        /// <returns>A match containing the results of the check.</returns>
+        /// <remarks>
+        /// This isn't a comprehensive test to check if something is a valid method; it basically
+        /// just checks to see if a line starts with the keywords "operation" or "function"
+        /// (ignoring whitespace), then if some other stuff comes after it, and finally if there's
+        /// an opening bracket at some point. This is just a simple first-pass filter used to
+        /// weed out cases where the user types a triple slash in a line that isn't on top of a
+        /// function or operation declaration. If something passes this check, it's sent to the
+        /// Q# parser application for further inspection - that's where the *real* syntax processing
+        /// is done.
+        /// </remarks>
+        private static Match GetMethodSignatureMatch(int CurrentCaretIndex, string FullText)
+        {
+            // Get the first occurrence of a '{' character after the cursor's current location
+            int nextOpenBracket = FullText.IndexOf('{', CurrentCaretIndex);
+            if (nextOpenBracket == -1)
+            {
+                return null;
+            }
+
+            // Get the potential method signature
+            string candidateSignature = FullText.Substring(CurrentCaretIndex, nextOpenBracket - CurrentCaretIndex + 1);
+
+            // Check if it's an operation
+            Match operationMatch = OperationRegex.Match(candidateSignature);
+            if (operationMatch.Success)
+            {
+                return operationMatch;
+            }
+
+            // Check if it's a function
+            Match functionMatch = FunctionRegex.Match(candidateSignature);
+            if (functionMatch.Success)
+            {
+                return functionMatch;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Checks to see if the given block of text is a Q# newtype declaration.
+        /// </summary>
+        /// <param name="CurrentCaretIndex">The current location of the caret in the code editor
+        /// (in terms of an absolute offset of the editor's text buffer)</param>
+        /// <param name="FullText">The entire contents of the code editor</param>
+        /// <returns>A match containing the results of the check.</returns>
+        /// <remarks>
+        /// Unlike <see cref="GetMethodSignatureMatch(int, string)"/>, this method is comparatively
+        /// simple. Since newtypes don't really have any documentation other than a Summary and some
+        /// optional stuff like Remarks or Examples, all we have to do is check for a "newtype" 
+        /// keyword followed by a semicolon somewhere, and tack on a Summary block.
+        /// </remarks>
+        private static Match GetNewTypeMatch(int CurrentCaretIndex, string FullText)
+        {
+            // Get the first occurrence of a ';' character after the cursor's current location
+            int nextSemicolon = FullText.IndexOf(';', CurrentCaretIndex);
+            if (nextSemicolon == -1)
+            {
+                return null;
+            }
+
+            // Get the potential newtype signature
+            string candidateSignature = FullText.Substring(CurrentCaretIndex, nextSemicolon - CurrentCaretIndex + 1);
+
+            // Check if it's a newtype
+            Match newTypeMatch = NewTypeRegex.Match(candidateSignature);
+            if (newTypeMatch.Success)
+            {
+                return newTypeMatch;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Creates a new CommentBlockHandler instance when a Q# file is opened in a code editor.
+        /// </summary>
+        /// <param name="Logger">A logger for recording event information</param>
+        /// <param name="TextViewAdapter">The code editor that was just created</param>
+        /// <param name="TextView">The WPF view of the code editor</param>
+        /// <param name="Provider">The <see cref="CommentBlockHandlerProvider"/> that created
+        /// this instance</param>
+        /// <param name="Messenger">The message handler for communicating with the Q# parser
+        /// application</param>
+        public CommentBlockHandler(Logger Logger, IVsTextView TextViewAdapter, IWpfTextView TextView,
+            CommentBlockHandlerProvider Provider, MessageServer Messenger)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            this.Logger = Logger;
             this.TextView = TextView;
             this.Provider = Provider;
-            this.WrapperChannel = WrapperChannel;
+            this.Messenger = Messenger;
 
-            Dte = Provider.ServiceProvider.GetService(typeof(DTE)) as DTE;
-            Assumes.Present(Dte);
-
+            Dte = Provider.ServiceProvider.GetService<DTE, DTE>();
             TextViewAdapter.AddCommandFilter(this, out NextCommandHandler);
+            Logger.Debug($"{nameof(CommentBlockHandler)} initialized.");
         }
+
 
         /// <summary>
         /// This is called by the underlying system to see which commands this handler supports. We don't
@@ -96,6 +240,7 @@ namespace QSharpTripleSlash.Extension
             ThreadHelper.ThrowIfNotOnUIThread();
             return NextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
         }
+
 
         /// <summary>
         /// Handles a new command.
@@ -118,9 +263,8 @@ namespace QSharpTripleSlash.Extension
                     return NextCommandHandler.Exec(ref CommandGroupGuid, CommandID, ExecOptions, InputArgs, OutputArgs);
                 }
 
-                char typedChar = char.MinValue;
-
                 // Get the character that was just typed (if there was one)
+                char typedChar = char.MinValue;
                 if (CommandGroupGuid == VSConstants.VSStd2K &&
                     CommandID == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
                 {
@@ -132,6 +276,7 @@ namespace QSharpTripleSlash.Extension
                 {
                     if (UserTypedTripleSlash())
                     {
+                        Logger.Debug("User entered a triple slash, handling it...");
                         HandleTripleSlash();
                         return VSConstants.S_OK;
                     }
@@ -146,7 +291,7 @@ namespace QSharpTripleSlash.Extension
                     {
                         if (MarkdownCompletionSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                         {
-                            string selectedCompletion = MarkdownCompletionSession.SelectedCompletionSet.SelectionStatus.Completion.DisplayText;
+                            Logger.Debug("User selected a Markdown header autocompletion suggestion.");
                             MarkdownCompletionSession.Commit();
                             return VSConstants.S_OK;
                         }
@@ -157,8 +302,9 @@ namespace QSharpTripleSlash.Extension
                 else if (CommandGroupGuid == VSConstants.VSStd2K && 
                         CommandID == (uint)VSConstants.VSStd2KCmdID.RETURN)
                 {
-                    if(HandleReturn())
+                    if (HandleNewlineInCommentBlock())
                     {
+                        Logger.Debug("User added a new line to a comment block.");
                         return VSConstants.S_OK;
                     }
                 }
@@ -166,17 +312,18 @@ namespace QSharpTripleSlash.Extension
                 // If none of the above happened, pass the event onto the regular handler.
                 int nextCommandResult = NextCommandHandler.Exec(ref CommandGroupGuid, CommandID, ExecOptions, InputArgs, OutputArgs);
 
-                // Check to see if we need to start an autocomplete session, if the user typed "#"
-                if(typedChar == '#')
+                // Check to see if the user typed "#" so we need to start an autocomplete session 
+                if (typedChar == '#')
                 {
                     string currentLine = TextView.TextSnapshot.GetLineFromPosition(
-                                TextView.Caret.Position.BufferPosition.Position).GetText();
+                        TextView.Caret.Position.BufferPosition.Position).GetText();
                     if (currentLine.TrimStart().StartsWith("/// #"))
                     {
                         // Create a new autocompletion session if there isn't one already
+                        Logger.Debug("User entered # on a triple-slashed line, starting a new autocomplete session...");
                         if (MarkdownCompletionSession == null || MarkdownCompletionSession.IsDismissed)
                         {
-                            if (this.StartMarkdownAutocompleteSession())
+                            if (StartMarkdownAutocompleteSession())
                             {
                                 MarkdownCompletionSession.SelectedCompletionSet.SelectBestMatch();
                                 MarkdownCompletionSession.SelectedCompletionSet.Recalculate();
@@ -202,13 +349,14 @@ namespace QSharpTripleSlash.Extension
 
                 return nextCommandResult;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Logger.Error($"Error handling command: {ex.GetType().Name} - {ex.Message}");
+                Logger.Trace(ex.StackTrace);
+                return VSConstants.E_FAIL;
             }
-
-            return VSConstants.E_FAIL;
         }
+
 
         /// <summary>
         /// Determines whether or not the user just entered a triple slash (///) on a blank line.
@@ -250,28 +398,32 @@ namespace QSharpTripleSlash.Extension
         }
 
 
+        /// <summary>
+        /// Creates and adds documentation comment blocks when the user types a triple slash.
+        /// </summary>
         private void HandleTripleSlash()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            TextSelection ts = Dte.ActiveDocument.Selection as TextSelection;
+            // Get the original placement of the cursor in the code editor
+            TextSelection ts = (TextSelection)Dte.ActiveDocument.Selection;
             int oldLine = ts.ActivePoint.Line;
             int oldOffset = ts.ActivePoint.LineCharOffset;
 
-            // Check to see if the previous line starts with a triple-slash already; if it does, we should probably
+            // Check to see if the previous line starts with a triple-slash; if it does, we should probably
             // just return because there's most likely a docstring already in place.
             ts.LineUp();
             ts.StartOfLine();
             string previousLine = TextView.TextSnapshot.GetLineFromPosition(
-                        TextView.Caret.Position.BufferPosition.Position).GetText();
+                TextView.Caret.Position.BufferPosition.Position).GetText();
             if(previousLine.TrimStart().StartsWith("///"))
             {
                 ts.MoveToLineAndOffset(oldLine, oldOffset);
-                ts.Insert("/");
+                ts.Insert("/");     // Add the slash that the user just typed
                 return;
             }
 
-            // Check to see if the next line contains a siganture we can document
+            // Get the contents of the next line (the one following the original line)
             ts.LineDown();
             ts.LineDown();
             ts.StartOfLine();
@@ -282,6 +434,7 @@ namespace QSharpTripleSlash.Extension
             Match methodMatch = GetMethodSignatureMatch(currentCharIndex, fullText);
             if(methodMatch != null)
             {
+                Logger.Debug($"Found a potential method match: [{methodMatch.Value}]");
                 string signatureString = methodMatch.Groups["Signature"].Value;
                 string leadingSpaces = methodMatch.Groups["Spaces"].Value;
 
@@ -290,33 +443,45 @@ namespace QSharpTripleSlash.Extension
                 commentBuilder.AppendLine("/ # Summary");
                 commentBuilder.Append(leadingSpaces + "/// ");
 
-                // Ask the Q# parser wrapper process to pull out all of the method details so we know what to
+                // Ask the Q# parser application to pull out all of the method details so we know what to
                 // put into the documentation comments, and add them if parsing succeeded
-                MethodSignatureResponse signature = WrapperChannel.RequestMethodSignatureParse(signatureString);
-                if (signature != null)
+                Logger.Debug("Sending a parse request to the Q# parser...");
+                try
                 {
-                    // Add sections for the input parameters
-                    if (signature.ParameterNames.Count > 0)
+                    MethodSignatureResponse signature = Messenger.RequestMethodSignatureParse(signatureString);
+                    if (signature != null)
                     {
-                        commentBuilder.AppendLine();
-                        commentBuilder.AppendLine(leadingSpaces + "/// ");
-                        commentBuilder.Append(leadingSpaces + "/// # Input");
-                        foreach (string parameterName in signature.ParameterNames)
+                        Logger.Debug($"Parsing succeeded, method name = [{signature.Name}], " +
+                            $"{signature.ParameterNames.Count} parameters, returns something = {signature.HasReturnType}.");
+
+                        // Add sections for the input parameters
+                        if (signature.ParameterNames.Count > 0)
                         {
                             commentBuilder.AppendLine();
-                            commentBuilder.AppendLine(leadingSpaces + $"/// ## {parameterName}");
+                            commentBuilder.AppendLine(leadingSpaces + "/// ");
+                            commentBuilder.Append(leadingSpaces + "/// # Input");
+                            foreach (string parameterName in signature.ParameterNames)
+                            {
+                                commentBuilder.AppendLine();
+                                commentBuilder.AppendLine(leadingSpaces + $"/// ## {parameterName}");
+                                commentBuilder.Append(leadingSpaces + "/// ");
+                            }
+                        }
+
+                        // Add the output section if it has a return type
+                        if (signature.HasReturnType)
+                        {
+                            commentBuilder.AppendLine();
+                            commentBuilder.AppendLine(leadingSpaces + "/// ");
+                            commentBuilder.AppendLine(leadingSpaces + "/// # Output");
                             commentBuilder.Append(leadingSpaces + "/// ");
                         }
                     }
-
-                    // Add the output section if it has a return type
-                    if (signature.HasReturnType)
-                    {
-                        commentBuilder.AppendLine();
-                        commentBuilder.AppendLine(leadingSpaces + "/// ");
-                        commentBuilder.AppendLine(leadingSpaces + "/// # Output");
-                        commentBuilder.Append(leadingSpaces + "/// ");
-                    }
+                }
+                catch(Exception ex)
+                {
+                    Logger.Error($"Error during method signature request: {ex.GetType().Name} - {ex.Message}");
+                    Logger.Trace(ex.StackTrace);
                 }
 
                 // Move to the original cursor position and add the comment block to the code
@@ -333,6 +498,7 @@ namespace QSharpTripleSlash.Extension
             Match newtypeMatch = GetNewTypeMatch(currentCharIndex, fullText);
             if (newtypeMatch != null)
             {
+                Logger.Debug($"Found a newtype match: [{newtypeMatch.Value}]");
                 string leadingSpaces = newtypeMatch.Groups["Spaces"].Value;
 
                 // Build the summary section
@@ -356,14 +522,18 @@ namespace QSharpTripleSlash.Extension
         }
 
 
-        private bool HandleReturn()
+        /// <summary>
+        /// Appends a new line to an existing comment block with indenting and a triple slash
+        /// already added.
+        /// </summary>
+        /// <returns>True if the addition worked, false if it failed.</returns>
+        private bool HandleNewlineInCommentBlock()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             TextSelection ts = Dte.ActiveDocument.Selection as TextSelection;
-
             string currentLine = TextView.TextSnapshot.GetLineFromPosition(
-                        TextView.Caret.Position.BufferPosition.Position).GetText();
+                TextView.Caret.Position.BufferPosition.Position).GetText();
             if (currentLine.TrimStart().StartsWith("///"))
             {
                 string leadingSpaces = currentLine.Replace(currentLine.TrimStart(), "");
@@ -374,6 +544,11 @@ namespace QSharpTripleSlash.Extension
         }
 
 
+        /// <summary>
+        /// Begins a new autocomplete session when the user begins to type a Markdown header.
+        /// </summary>
+        /// <returns>True if the session was created successfully, false if it failed or if
+        /// an active autocomplete session already existed.</returns>
         private bool StartMarkdownAutocompleteSession()
         {
             try
@@ -383,74 +558,36 @@ namespace QSharpTripleSlash.Extension
                     return false;
                 }
 
+                // Get the caret point in the editor and pass it to the new autocomplete session
                 SnapshotPoint? caretPoint = TextView.Caret.Position.Point.GetPoint(
                     textBuffer => (!textBuffer.ContentType.IsOfType("projection")), PositionAffinity.Predecessor);
                 MarkdownCompletionSession = Provider.CompletionBroker.CreateCompletionSession(
                     TextView, caretPoint.Value.Snapshot.CreateTrackingPoint(caretPoint.Value.Position, PointTrackingMode.Positive), true);
-
-                // subscribe to the Dismissed event on the session 
-                MarkdownCompletionSession.Dismissed += MarkdownCompletionSession_Dismissed; ;
+                MarkdownCompletionSession.Dismissed += MarkdownCompletionSession_Dismissed;
                 MarkdownCompletionSession.Start();
                 return true;
             }
-            catch(Exception)
+            catch(Exception ex)
             {
+                Logger.Warn($"Creating an autocomplete session failed: {ex.GetType().Name} - {ex.Message}");
+                Logger.Trace(ex.StackTrace);
                 return false;
             }
         }
 
 
-        private void MarkdownCompletionSession_Dismissed(object sender, EventArgs e)
+        /// <summary>
+        /// Removes references to the current autocompletion session once it finishes.
+        /// </summary>
+        /// <param name="Sender">Not used</param>
+        /// <param name="Args">Not used</param>
+        private void MarkdownCompletionSession_Dismissed(object Sender, EventArgs Args)
         {
             if(MarkdownCompletionSession != null)
             {
                 MarkdownCompletionSession.Dismissed -= MarkdownCompletionSession_Dismissed;
                 MarkdownCompletionSession = null;
             }
-        }
-
-
-        private static Match GetMethodSignatureMatch(int CurrentCaretIndex, string FullText)
-        {
-            int nextOpenBracket = FullText.IndexOf('{', CurrentCaretIndex);
-            if(nextOpenBracket == -1)
-            {
-                return null;
-            }
-
-            // Get the potential method signature and check if it's an operation or a function
-            string candidateSignature = FullText.Substring(CurrentCaretIndex, nextOpenBracket - CurrentCaretIndex + 1);
-            Match operationMatch = OperationRegex.Match(candidateSignature);
-            if(operationMatch.Success)
-            {
-                return operationMatch;
-            }
-            Match functionMatch = FunctionRegex.Match(candidateSignature);
-            if (functionMatch.Success)
-            {
-                return functionMatch;
-            }
-
-            return null;
-        }
-
-
-        private static Match GetNewTypeMatch(int CurrentCaretIndex, string FullText)
-        {
-            int nextSemicolon = FullText.IndexOf(';', CurrentCaretIndex);
-            if (nextSemicolon == -1)
-            {
-                return null;
-            }
-
-            string candidateSignature = FullText.Substring(CurrentCaretIndex, nextSemicolon - CurrentCaretIndex + 1);
-            Match newTypeMatch = NewTypeRegex.Match(candidateSignature);
-            if (newTypeMatch.Success)
-            {
-                return newTypeMatch;
-            }
-
-            return null;
         }
 
     }

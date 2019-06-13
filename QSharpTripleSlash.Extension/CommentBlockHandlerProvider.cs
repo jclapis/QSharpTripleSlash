@@ -100,7 +100,7 @@ namespace QSharpTripleSlash.Extension
             // Create a logger
             string assemblyPath = typeof(CommentBlockHandlerProvider).Assembly.Location;
             string basePath = Path.GetDirectoryName(assemblyPath);
-            Logger = new Logger(basePath, "Extension.log");
+            Logger = Logger.GetOrCreateLogger(basePath, "Extension.log");
             Logger.Debug("Extension logger ready.");
 
             WrapperChannel = MessageServer.GetOrCreateServer(Logger);
@@ -131,7 +131,7 @@ namespace QSharpTripleSlash.Extension
                 // already been made.
                 textView.Properties.GetOrCreateSingletonProperty(() =>
                 {
-                    return new CommentBlockHandler(TextViewAdapter, textView, this, WrapperChannel);
+                    return new CommentBlockHandler(Logger, TextViewAdapter, textView, this, WrapperChannel);
                 });
             }
             catch (Exception ex)

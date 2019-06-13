@@ -21,27 +21,38 @@
 
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition;
 
 namespace QSharpTripleSlash.Extension
 {
+    /// <summary>
+    /// This class creates a <see cref="MarkdownHeaderCompletionSource"/> when a
+    /// Markdown section autocomplete session is started in a Q# code editor.
+    /// </summary>
     [Export(typeof(ICompletionSourceProvider))]
     [Name("Q# Triple Slash Comment Autocomplete Handler")]
     [ContentType("code++.qsharp")]
     [ContentType("Q#")]
     internal class MarkdownHeaderCompletionSourceProvider : ICompletionSourceProvider
     {
-        [Import]
-        internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
-
+        /// <summary>
+        /// This is used to get the icons for the autocomplete suggestions.
+        /// </summary>
         [Import]
         internal IGlyphService GlyphService { get; set; }
 
-        public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
+
+        /// <summary>
+        /// Creates a new <see cref="MarkdownHeaderCompletionSource"/> instance
+        /// to handle the autocomplete session.
+        /// </summary>
+        /// <param name="TextBuffer">The Q# code editor that started the session</param>
+        /// <returns>A <see cref="MarkdownHeaderCompletionSource"/> instance.</returns>
+        public ICompletionSource TryCreateCompletionSource(ITextBuffer TextBuffer)
         {
-            return new MarkdownHeaderCompletionSource(this, textBuffer);
+            return new MarkdownHeaderCompletionSource(this, TextBuffer);
         }
+
     }
 }

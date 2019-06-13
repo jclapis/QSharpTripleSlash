@@ -19,41 +19,65 @@
  * to let us know where this software is being used.
  * ======================================================================== */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Operations;
-using Microsoft.VisualStudio.Utilities;
+using QSharpTripleSlash.Common;
+using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 
 namespace QSharpTripleSlash.Extension
 {
+    /// <summary>
+    /// This class handles autocomplete sessions for Markdown header sections in
+    /// documentation comments.
+    /// </summary>
     internal class MarkdownHeaderCompletionSource : ICompletionSource
     {
-        private readonly MarkdownHeaderCompletionSourceProvider Provider;
+        /// <summary>
+        /// A logger for recording event information
+        /// </summary>
+        private readonly Logger Logger;
 
+
+        /// <summary>
+        /// The text buffer for the Q# code editor
+        /// </summary>
         private readonly ITextBuffer TextBuffer;
 
+
+        /// <summary>
+        /// A collection of autocomplete options for Markdown headers in Q# code
+        /// </summary>
         private readonly List<Completion> MarkdownCompletionList;
 
+
+        /// <summary>
+        /// The icon to use for each option in the autocomplete list
+        /// </summary>
         private readonly ImageSource OptionImage;
 
+
+        /// <summary>
+        /// Creates a new MarkdownHeaderCompletionSource instance.
+        /// </summary>
+        /// <param name="Provider">The provider that created this instance</param>
+        /// <param name="TextBuffer">The text buffer for the Q# code editor</param>
         public MarkdownHeaderCompletionSource(MarkdownHeaderCompletionSourceProvider Provider, ITextBuffer TextBuffer)
         {
-            this.Provider = Provider;
             this.TextBuffer = TextBuffer;
+            // The logger was initialized in the CommentBlockHandlerProvider, so we can ignore the parameters here.
+            Logger = Logger.GetOrCreateLogger(null, null);
 
             try
             {
                 OptionImage = Provider.GlyphService.GetGlyph(StandardGlyphGroup.GlyphKeyword, StandardGlyphItem.GlyphItemPublic);
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-
+                Logger.Warn($"Couldn't retrieve the icon for public items, autocomplete items will have a missing icon: " +
+                    $"{ex.GetType().Name} - {ex.Message}");
+                Logger.Trace(ex.StackTrace);
             }
 
             // Note: all of these sections and descriptions come from the official Q# documentation, which can be
@@ -92,17 +116,31 @@ namespace QSharpTripleSlash.Extension
                 new Completion("References", "# References", "A list of references and citations for the item being " +
                     "documented.", OptionImage, string.Empty)
             };
+
+            Logger.Debug($"{nameof(MarkdownHeaderCompletionSource)} initialized.");
         }
 
-        void ICompletionSource.AugmentCompletionSession(ICompletionSession Session, IList<CompletionSet> CompletionSets)
+
+        /// <summary>
+        /// Adds the Markdown header sections to the list of completion sets in an autocomplete session.
+        /// </summary>
+        /// <param name="Session">The autocomplete session being created</param>
+        /// <param name="CompletionSets">The list of completion sets to add to</param>
+        public void AugmentCompletionSession(ICompletionSession Session, IList<CompletionSet> CompletionSets)
         {
             try
             {
+                Logger.Debug("Adding markdown headers to an autocomplete session.");
+
+                // Get the line that the cursor is currently on
                 SnapshotPoint? triggerPoint = Session.GetTriggerPoint(TextBuffer.CurrentSnapshot);
                 string line = triggerPoint.Value.GetContainingLine().GetText();
+
+                // Check if it looks like the user is starting to write a Markdown header
                 if(line.Trim().StartsWith("/// #"))
                 {
-                    ITrackingSpan trackingSpan = FindTokenSpanAtPosition(Session.GetTriggerPoint(TextBuffer), Session);
+                    SnapshotPoint currentPoint = Session.TextView.Caret.Position.BufferPosition - 1;
+                    ITrackingSpan trackingSpan = currentPoint.Snapshot.CreateTrackingSpan(currentPoint, 1, SpanTrackingMode.EdgeInclusive);
                     CompletionSet completionSet = new CompletionSet(
                         "QSharpMarkdownCompletionSet",
                         "Q# Markdown Completion Set",
@@ -113,26 +151,20 @@ namespace QSharpTripleSlash.Extension
                     CompletionSets.Add(completionSet);
                 }
             }
-            catch
+            catch(Exception ex)
             {
-
+                Logger.Warn($"A problem occurred during Markdown header autocompletion: {ex.GetType().Name} - {ex.Message}");
+                Logger.Trace(ex.StackTrace);
             }
         }
 
-        private ITrackingSpan FindTokenSpanAtPosition(ITrackingPoint point, ICompletionSession session)
-        {
-            SnapshotPoint currentPoint = session.TextView.Caret.Position.BufferPosition - 1;
-            return currentPoint.Snapshot.CreateTrackingSpan(currentPoint, 1, SpanTrackingMode.EdgeInclusive);
-        }
 
-        private bool m_isDisposed;
+        /// <summary>
+        /// This doesn't do anything, because there's nothing to dispose.
+        /// </summary>
         public void Dispose()
         {
-            if (!m_isDisposed)
-            {
-                GC.SuppressFinalize(this);
-                m_isDisposed = true;
-            }
+
         }
 
     }

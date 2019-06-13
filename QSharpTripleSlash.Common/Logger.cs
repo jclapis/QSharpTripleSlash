@@ -35,9 +35,32 @@ namespace QSharpTripleSlash.Common
     public class Logger
     {
         /// <summary>
+        /// The singleton Logger instance
+        /// </summary>
+        private static Logger Instance;
+
+
+        /// <summary>
         /// The NLog Logger backend that actually implements the logging functionality.
         /// </summary>
         private readonly NLogger LoggerImpl;
+
+
+        /// <summary>
+        /// Creates a new logger, or retrieves the existing one if it already exists.
+        /// </summary>
+        /// <param name="BaseDirectory">The base installation directory of QSharpTripleSlash</param>
+        /// <param name="LogFileName">The name of the log file to create for this instance</param>
+        /// <returns>A logger instance</returns>
+        public static Logger GetOrCreateLogger(string BaseDirectory, string LogFileName)
+        {
+            if(Instance == null)
+            {
+                Instance = new Logger(BaseDirectory, LogFileName);
+            }
+
+            return Instance;
+        }
 
 
         /// <summary>
@@ -60,7 +83,7 @@ namespace QSharpTripleSlash.Common
         /// </summary>
         /// <param name="BaseDirectory">The base installation directory of QSharpTripleSlash</param>
         /// <param name="LogFileName">The name of the log file to create for this instance</param>
-        public Logger(string BaseDirectory, string LogFileName)
+        private Logger(string BaseDirectory, string LogFileName)
         {
             string logFile = Path.Combine(BaseDirectory, LogFileName);
             LoggingConfiguration logConfig = new LoggingConfiguration();

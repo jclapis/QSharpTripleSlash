@@ -42,7 +42,7 @@ namespace QSharpTripleSlash.Parser
             // Create a logger
             string assemblyPath = typeof(Program).Assembly.Location;
             string basePath = Path.Combine(Path.GetDirectoryName(assemblyPath), "..");
-            Logger logger = new Logger(basePath, "Parser.log");
+            Logger logger = Logger.GetOrCreateLogger(basePath, "Parser.log");
 
             // Make sure there's exactly 1 argument
             if(Args.Length != 1)
