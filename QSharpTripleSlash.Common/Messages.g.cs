@@ -29,19 +29,20 @@ namespace QSharpTripleSlash.Common {
             "bW1vbi5NZXNzYWdlVHlwZRITCgtNZXNzYWdlQm9keRgCIAEoDCI/CgVFcnJv",
             "chIRCglFcnJvclR5cGUYASABKAkSDwoHTWVzc2FnZRgCIAEoCRISCgpTdGFj",
             "a1RyYWNlGAMgASgJIjEKFk1ldGhvZFNpZ25hdHVyZVJlcXVlc3QSFwoPTWV0",
-            "aG9kU2lnbmF0dXJlGAEgASgJIlYKF01ldGhvZFNpZ25hdHVyZVJlc3BvbnNl",
-            "EgwKBE5hbWUYASABKAkSFgoOUGFyYW1ldGVyTmFtZXMYAiADKAkSFQoNSGFz",
-            "UmV0dXJuVHlwZRgDIAEoCCqOAQoLTWVzc2FnZVR5cGUSFwoTTWVzc2FnZVR5",
-            "cGVfVW5rbm93bhAAEhUKEU1lc3NhZ2VUeXBlX0Vycm9yEAESJgoiTWVzc2Fn",
-            "ZVR5cGVfTWV0aG9kU2lnbmF0dXJlUmVxdWVzdBACEicKI01lc3NhZ2VUeXBl",
-            "X01ldGhvZFNpZ25hdHVyZVJlc3BvbnNlEANiBnByb3RvMw=="));
+            "aG9kU2lnbmF0dXJlGAEgASgJInIKF01ldGhvZFNpZ25hdHVyZVJlc3BvbnNl",
+            "EgwKBE5hbWUYASABKAkSFgoOUGFyYW1ldGVyTmFtZXMYAiADKAkSGgoSVHlw",
+            "ZVBhcmFtZXRlck5hbWVzGAMgAygJEhUKDUhhc1JldHVyblR5cGUYBCABKAgq",
+            "jgEKC01lc3NhZ2VUeXBlEhcKE01lc3NhZ2VUeXBlX1Vua25vd24QABIVChFN",
+            "ZXNzYWdlVHlwZV9FcnJvchABEiYKIk1lc3NhZ2VUeXBlX01ldGhvZFNpZ25h",
+            "dHVyZVJlcXVlc3QQAhInCiNNZXNzYWdlVHlwZV9NZXRob2RTaWduYXR1cmVS",
+            "ZXNwb25zZRADYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::QSharpTripleSlash.Common.MessageType), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.Message), global::QSharpTripleSlash.Common.Message.Parser, new[]{ "Type", "MessageBody" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.Error), global::QSharpTripleSlash.Common.Error.Parser, new[]{ "ErrorType", "Message", "StackTrace" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureRequest), global::QSharpTripleSlash.Common.MethodSignatureRequest.Parser, new[]{ "MethodSignature" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureResponse), global::QSharpTripleSlash.Common.MethodSignatureResponse.Parser, new[]{ "Name", "ParameterNames", "HasReturnType" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::QSharpTripleSlash.Common.MethodSignatureResponse), global::QSharpTripleSlash.Common.MethodSignatureResponse.Parser, new[]{ "Name", "ParameterNames", "TypeParameterNames", "HasReturnType" }, null, null, null)
           }));
     }
     #endregion
@@ -599,6 +600,7 @@ namespace QSharpTripleSlash.Common {
     public MethodSignatureResponse(MethodSignatureResponse other) : this() {
       name_ = other.name_;
       parameterNames_ = other.parameterNames_.Clone();
+      typeParameterNames_ = other.typeParameterNames_.Clone();
       hasReturnType_ = other.hasReturnType_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -635,8 +637,21 @@ namespace QSharpTripleSlash.Common {
       get { return parameterNames_; }
     }
 
+    /// <summary>Field number for the "TypeParameterNames" field.</summary>
+    public const int TypeParameterNamesFieldNumber = 3;
+    private static readonly pb::FieldCodec<string> _repeated_typeParameterNames_codec
+        = pb::FieldCodec.ForString(26);
+    private readonly pbc::RepeatedField<string> typeParameterNames_ = new pbc::RepeatedField<string>();
+    /// <summary>
+    /// The names of each of the type parameters
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> TypeParameterNames {
+      get { return typeParameterNames_; }
+    }
+
     /// <summary>Field number for the "HasReturnType" field.</summary>
-    public const int HasReturnTypeFieldNumber = 3;
+    public const int HasReturnTypeFieldNumber = 4;
     private bool hasReturnType_;
     /// <summary>
     /// True if it returns something, false if it returns Unit (so the output section can be ignored).
@@ -664,6 +679,7 @@ namespace QSharpTripleSlash.Common {
       }
       if (Name != other.Name) return false;
       if(!parameterNames_.Equals(other.parameterNames_)) return false;
+      if(!typeParameterNames_.Equals(other.typeParameterNames_)) return false;
       if (HasReturnType != other.HasReturnType) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -673,6 +689,7 @@ namespace QSharpTripleSlash.Common {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= parameterNames_.GetHashCode();
+      hash ^= typeParameterNames_.GetHashCode();
       if (HasReturnType != false) hash ^= HasReturnType.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -692,8 +709,9 @@ namespace QSharpTripleSlash.Common {
         output.WriteString(Name);
       }
       parameterNames_.WriteTo(output, _repeated_parameterNames_codec);
+      typeParameterNames_.WriteTo(output, _repeated_typeParameterNames_codec);
       if (HasReturnType != false) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(32);
         output.WriteBool(HasReturnType);
       }
       if (_unknownFields != null) {
@@ -708,6 +726,7 @@ namespace QSharpTripleSlash.Common {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       size += parameterNames_.CalculateSize(_repeated_parameterNames_codec);
+      size += typeParameterNames_.CalculateSize(_repeated_typeParameterNames_codec);
       if (HasReturnType != false) {
         size += 1 + 1;
       }
@@ -726,6 +745,7 @@ namespace QSharpTripleSlash.Common {
         Name = other.Name;
       }
       parameterNames_.Add(other.parameterNames_);
+      typeParameterNames_.Add(other.typeParameterNames_);
       if (other.HasReturnType != false) {
         HasReturnType = other.HasReturnType;
       }
@@ -748,7 +768,11 @@ namespace QSharpTripleSlash.Common {
             parameterNames_.AddEntriesFrom(input, _repeated_parameterNames_codec);
             break;
           }
-          case 24: {
+          case 26: {
+            typeParameterNames_.AddEntriesFrom(input, _repeated_typeParameterNames_codec);
+            break;
+          }
+          case 32: {
             HasReturnType = input.ReadBool();
             break;
           }

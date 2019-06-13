@@ -82,6 +82,9 @@ message MethodSignatureResponse
 	// The names of each of the parameters
 	repeated string ParameterNames = 2;
 
+	// The names of each of the type parameters
+	repeated string TypeParameterNames = 3;
+
 	// True if it returns something, false if it returns Unit (so the output section can be ignored).
-	bool HasReturnType = 3;
+	bool HasReturnType = 4;
 }

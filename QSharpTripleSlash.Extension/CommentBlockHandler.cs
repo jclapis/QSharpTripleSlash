@@ -468,6 +468,20 @@ namespace QSharpTripleSlash.Extension
                             }
                         }
 
+                        // Add sections for the type parameters
+                        if (signature.TypeParameterNames.Count > 0)
+                        {
+                            commentBuilder.AppendLine();
+                            commentBuilder.AppendLine(leadingSpaces + "/// ");
+                            commentBuilder.Append(leadingSpaces + "/// # Type Parameters");
+                            foreach (string typeParameterName in signature.TypeParameterNames)
+                            {
+                                commentBuilder.AppendLine();
+                                commentBuilder.AppendLine(leadingSpaces + $"/// ## '{typeParameterName}");
+                                commentBuilder.Append(leadingSpaces + "/// ");
+                            }
+                        }
+
                         // Add the output section if it has a return type
                         if (signature.HasReturnType)
                         {

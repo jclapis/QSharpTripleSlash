@@ -63,6 +63,7 @@ namespace QSharpTripleSlash.Parser
             {
                 string name = null;
                 List<string> parameterNames = null;
+                List<string> typeParameterNames = null;
                 bool hasReturnType = false;
 
                 // Parse the details out of the signature text
@@ -71,12 +72,14 @@ namespace QSharpTripleSlash.Parser
                 {
                     name = GetSymbolName(operationDeclaration.Item1);
                     parameterNames = GetParameterNames(operationDeclaration.Item2);
+                    typeParameterNames = GetTypeParameterNames(operationDeclaration.Item2);
                     hasReturnType = CheckForReturnType(operationDeclaration.Item2);
                 }
                 else if(fragments[0].Kind is QsFragmentKind.FunctionDeclaration functionDeclaration)
                 {
                     name = GetSymbolName(functionDeclaration.Item1);
                     parameterNames = GetParameterNames(functionDeclaration.Item2);
+                    typeParameterNames = GetTypeParameterNames(functionDeclaration.Item2);
                     hasReturnType = CheckForReturnType(functionDeclaration.Item2);
                 }
                 else
@@ -104,6 +107,7 @@ namespace QSharpTripleSlash.Parser
                     HasReturnType = hasReturnType
                 };
                 response.ParameterNames.AddRange(parameterNames);
+                response.TypeParameterNames.AddRange(typeParameterNames);
                 return response;
             }
             catch(Exception ex)
@@ -179,13 +183,32 @@ namespace QSharpTripleSlash.Parser
 
 
         /// <summary>
-        /// Determins whether or not the method returns something based on its signature.
+        /// Determines whether or not the method returns something based on its signature.
         /// </summary>
-        /// <param name="MethodSignature">The method's signature</param>
+        /// <param name="MethodSignature">The signature of the method to process</param>
         /// <returns>True if it returns something, false if the return type is Unit.</returns>
         private bool CheckForReturnType(CallableSignature MethodSignature)
         {
             return MethodSignature.ReturnType.Type != QsTypeKind<QsType, QsSymbol, QsSymbol, Affiliation>.UnitType;
+        }
+
+
+        /// <summary>
+        /// Gets the names of the type parameters in the provided method.
+        /// </summary>
+        /// <param name="MethodSignature">The method's signature</param>
+        /// <returns>A list of all of the method's type parameter names.</returns>
+        private List<string> GetTypeParameterNames(CallableSignature MethodSignature)
+        {
+            List<string> typeParameterNames = new List<string>();
+
+            foreach (QsSymbol symbol in MethodSignature.TypeParameters)
+            {
+                string name = GetSymbolName(symbol);
+                typeParameterNames.Add(name);
+            }
+
+            return typeParameterNames;
         }
 
     }
