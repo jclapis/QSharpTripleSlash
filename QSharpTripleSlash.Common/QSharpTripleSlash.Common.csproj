@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>Joe Clapis</Authors>
+    <Authors>The MITRE Corporation</Authors>
     <Version>1.0.0</Version>
     <Description>This contains common functionality shared between the QSharpTripleSlash extension and its Q# parsing wrapper application.</Description>
     <Company>The MITRE Corporation</Company>

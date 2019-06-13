@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("QSharpTripleSlash")]
+[assembly: AssemblyTitle("QSharpTripleSlash.Extension")]
 [assembly: AssemblyDescription("A Visual Studio extension that adds automated documentation comments to Q# operations, functions, and custom types.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The MITRE Corporation")]
