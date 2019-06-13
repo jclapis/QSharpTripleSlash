@@ -29,6 +29,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using QSharpTripleSlash.Common;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -65,6 +66,19 @@ namespace QSharpTripleSlash.Extension
         /// A logger for recording event information
         /// </summary>
         private readonly Logger Logger;
+
+
+        /// <summary>
+        /// The number of lines to put between Markdown sections in documentation comments
+        /// </summary>
+        private readonly int LinesBetweenSections;
+
+
+        /// <summary>
+        /// The number of lines to put between individual parameter subsections in Markdown
+        /// documentation comments
+        /// </summary>
+        private readonly int LinesBetweenParameters;
 
 
         /// <summary>
@@ -223,6 +237,49 @@ namespace QSharpTripleSlash.Extension
             this.Provider = Provider;
             this.Messenger = Messenger;
 
+            // Get the relevant configuration parameters from the config file
+            try
+            {
+                string assemblyPath = typeof(CommentBlockHandlerProvider).Assembly.Location;
+                string basePath = Path.GetDirectoryName(assemblyPath);
+                ConfigManager config = new ConfigManager(basePath);
+
+                // Get lines-between-sections
+                if (!config.GetConfigSetting("Comment-Structure", "lines-between-sections", out string linesBetweenSectionsString))
+                {
+                    LinesBetweenSections = 2;
+                    Logger.Warn($"Couldn't get the lines-between-sections setting from the config file, defaulting to {LinesBetweenSections}.");
+                }
+                else if (!int.TryParse(linesBetweenSectionsString, out LinesBetweenSections))
+                {
+                    LinesBetweenSections = 2;
+                    Logger.Warn($"The lines-between-sections setting from the config file is set to [{linesBetweenSectionsString}] " +
+                        $"which isn't a valid integer value. Defaulting to {LinesBetweenSections}.");
+                }
+
+                // Get lines-between-parameters
+                if (!config.GetConfigSetting("Comment-Structure", "lines-between-parameters", out string linesBetweenParametersString))
+                {
+                    LinesBetweenParameters = 2;
+                    Logger.Warn($"Couldn't get the lines-between-parameters setting from the config file, defaulting to {LinesBetweenParameters}.");
+                }
+                else if (!int.TryParse(linesBetweenParametersString, out LinesBetweenParameters))
+                {
+                    LinesBetweenParameters = 2;
+                    Logger.Warn($"The lines-between-sections setting from the config file is set to [{linesBetweenParametersString}] " +
+                        $"which isn't a valid integer value. Defaulting to {LinesBetweenParameters}.");
+                }
+            }
+            catch(Exception ex)
+            {
+                LinesBetweenSections = 2;
+                LinesBetweenParameters = 2;
+                Logger.Warn($"Loading the comment structure settings from the config file failed: {ex.GetType().Name} - {ex.Message}");
+                Logger.Trace(ex.StackTrace);
+                Logger.Warn("Using the default settings.");
+            }
+
+            // Get a handle to the Visual Studio environment and the next handler in the chain
             Dte = Provider.ServiceProvider.GetService<DTE, DTE>();
             TextViewAdapter.AddCommandFilter(this, out NextCommandHandler);
             Logger.Debug($"{nameof(CommentBlockHandler)} initialized.");
@@ -453,43 +510,7 @@ namespace QSharpTripleSlash.Extension
                     {
                         Logger.Debug($"Parsing succeeded, method name = [{signature.Name}], " +
                             $"{signature.ParameterNames.Count} parameters, returns something = {signature.HasReturnType}.");
-
-                        // Add sections for the input parameters
-                        if (signature.ParameterNames.Count > 0)
-                        {
-                            commentBuilder.AppendLine();
-                            commentBuilder.AppendLine(leadingSpaces + "/// ");
-                            commentBuilder.Append(leadingSpaces + "/// # Input");
-                            foreach (string parameterName in signature.ParameterNames)
-                            {
-                                commentBuilder.AppendLine();
-                                commentBuilder.AppendLine(leadingSpaces + $"/// ## {parameterName}");
-                                commentBuilder.Append(leadingSpaces + "/// ");
-                            }
-                        }
-
-                        // Add sections for the type parameters
-                        if (signature.TypeParameterNames.Count > 0)
-                        {
-                            commentBuilder.AppendLine();
-                            commentBuilder.AppendLine(leadingSpaces + "/// ");
-                            commentBuilder.Append(leadingSpaces + "/// # Type Parameters");
-                            foreach (string typeParameterName in signature.TypeParameterNames)
-                            {
-                                commentBuilder.AppendLine();
-                                commentBuilder.AppendLine(leadingSpaces + $"/// ## '{typeParameterName}");
-                                commentBuilder.Append(leadingSpaces + "/// ");
-                            }
-                        }
-
-                        // Add the output section if it has a return type
-                        if (signature.HasReturnType)
-                        {
-                            commentBuilder.AppendLine();
-                            commentBuilder.AppendLine(leadingSpaces + "/// ");
-                            commentBuilder.AppendLine(leadingSpaces + "/// # Output");
-                            commentBuilder.Append(leadingSpaces + "/// ");
-                        }
+                        BuildMethodCommentBlock(signature, commentBuilder, leadingSpaces);
                     }
                 }
                 catch(Exception ex)
@@ -533,6 +554,83 @@ namespace QSharpTripleSlash.Extension
             // If this was a triple slash on something else, just add the slash and return.
             ts.MoveToLineAndOffset(oldLine, oldOffset);
             ts.Insert("/");
+        }
+
+
+        /// <summary>
+        /// Adds the relevant Markdown sections for the given method signature to the provided
+        /// comment block builder.
+        /// </summary>
+        /// <param name="MethodSignature">The method's signature</param>
+        /// <param name="CommentBuilder">The <see cref="StringBuilder"/> used to generate the 
+        /// comment block</param>
+        /// <param name="LeadingSpaces">A string containing the leading spaces used for
+        /// indenting the comment block</param>
+        private void BuildMethodCommentBlock(MethodSignatureResponse MethodSignature, StringBuilder CommentBuilder, string LeadingSpaces)
+        {
+            // Add sections for the input parameters
+            if (MethodSignature.ParameterNames.Count > 0)
+            {
+                CommentBuilder.AppendLine();
+                for (int i = 0; i < LinesBetweenSections - 1; i++)
+                {
+                    CommentBuilder.AppendLine(LeadingSpaces + "/// ");
+                }
+                CommentBuilder.Append(LeadingSpaces + "/// # Input");
+                bool isFirstParameter = true;
+                foreach (string parameterName in MethodSignature.ParameterNames)
+                {
+                    CommentBuilder.AppendLine();
+                    if (!isFirstParameter)
+                    {
+                        for (int i = 0; i < LinesBetweenParameters - 1; i++)
+                        {
+                            CommentBuilder.AppendLine(LeadingSpaces + "/// ");
+                        }
+                    }
+                    isFirstParameter = false;
+                    CommentBuilder.AppendLine(LeadingSpaces + $"/// ## {parameterName}");
+                    CommentBuilder.Append(LeadingSpaces + "/// ");
+                }
+            }
+
+            // Add sections for the type parameters
+            if (MethodSignature.TypeParameterNames.Count > 0)
+            {
+                CommentBuilder.AppendLine();
+                for (int i = 0; i < LinesBetweenSections - 1; i++)
+                {
+                    CommentBuilder.AppendLine(LeadingSpaces + "/// ");
+                }
+                CommentBuilder.Append(LeadingSpaces + "/// # Type Parameters");
+                bool isFirstParameter = true;
+                foreach (string typeParameterName in MethodSignature.TypeParameterNames)
+                {
+                    CommentBuilder.AppendLine();
+                    if (!isFirstParameter)
+                    {
+                        for (int i = 0; i < LinesBetweenParameters - 1; i++)
+                        {
+                            CommentBuilder.AppendLine(LeadingSpaces + "/// ");
+                        }
+                    }
+                    isFirstParameter = false;
+                    CommentBuilder.AppendLine(LeadingSpaces + $"/// ## '{typeParameterName}");
+                    CommentBuilder.Append(LeadingSpaces + "/// ");
+                }
+            }
+
+            // Add the output section if it has a return type
+            if (MethodSignature.HasReturnType)
+            {
+                CommentBuilder.AppendLine();
+                for (int i = 0; i < LinesBetweenSections - 1; i++)
+                {
+                    CommentBuilder.AppendLine(LeadingSpaces + "/// ");
+                }
+                CommentBuilder.AppendLine(LeadingSpaces + "/// # Output");
+                CommentBuilder.Append(LeadingSpaces + "/// ");
+            }
         }
 
 

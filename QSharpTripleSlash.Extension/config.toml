@@ -20,12 +20,12 @@
 [Comment-Structure]
 
 	# This is the number of newlines to add between main sections in the comment
-	# (such as Summary, Input, and Output). The default is 1.
-	lines-between-sections = 1
+	# (such as Summary, Input, and Output). The minimum is 1, and the default is 2.
+	lines-between-sections = 2
 
 	# This is the number of newlines between the subsections for individual parameters in the
-	# Input section. The default is 1.
-	lines-between-parameters = 1
+	# Input section. The minimum is 1, and the default is 2.
+	lines-between-parameters = 2
 
 
 # This section controls the Q# parser application that the extension uses to parse Q# code.
