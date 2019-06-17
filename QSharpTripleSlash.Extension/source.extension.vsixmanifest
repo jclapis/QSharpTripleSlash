@@ -3,9 +3,12 @@
     <Metadata>
         <Identity Id="QSharpTripleSlash.3feb5748-68a0-42dc-9e92-75227662f626" Version="1.0.0" Language="en-US" Publisher="Joe Clapis" />
         <DisplayName>QSharpTripleSlash</DisplayName>
-        <Description xml:space="preserve">QSharpTripleSlash provides automatic creation and Intellisense autocompletion of documentation comments (triple-slash comments) for operations, functions, and newtypes in Q# code. It brings the convenience of Visual Studio's automation support for C# XML-style documentation comments to Q# developers.</Description>
+        <Description xml:space="preserve">QSharpTripleSlash provides automatic creation and Intellisense autocompletion of documentation comments (triple-slash comments) for operations, functions, and newtypes in Q# code. It brings the convenience of Visual Studio's automation support for C# XML-style documentation comments to Q# developers. It was inspired by cpptripleslash, which brought automatic documentation to Visual Studio for C++ code.</Description>
         <MoreInfo>https://github.com/jclapis/QSharpTripleSlash</MoreInfo>
         <License>LICENSE.txt</License>
+        <GettingStartedGuide>https://github.com/jclapis/QSharpTripleSlash</GettingStartedGuide>
+        <Icon>icon.png</Icon>
+        <PreviewImage>autocomplete.jpg</PreviewImage>
         <Tags>QDK, Q#, Q Sharp, Quantum, Quantum Development Kit, Triple Slash, Autocomplete, Documentation</Tags>
     </Metadata>
     <Installation>
