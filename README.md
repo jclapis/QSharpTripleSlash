@@ -16,6 +16,7 @@ for you as soon as you type three forward-slashes above an operation, function, 
 
 It will automatically add an `# Input` section if your method has input parameters, and a subsection for each one.
 It will also add an `# Output` section if your method returns something besides `UnitType`.
+It also supports Type Parameters for generic-style functions and operations.
 
 Pressing `Enter` on a line within a documentation comment will automatically add a new line that has 
 three forward slashes and is properly indented, making it easy to write multiline comments.
@@ -28,8 +29,9 @@ These section suggestions (and their tooltip descriptions) are all derived from 
 
 
 ## Installation
-The extension will soon be available on the Visual Studio Marketplace, and as a standalone VSIX file in the
-releases section of the repository. Stay tuned!
+The extension is available on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=JoeClapis.QSharpTripleSlash),
+and as a standalone VSIX file in the [releases section](https://github.com/jclapis/QSharpTripleSlash/releases) of the repository.
+Simply open the VSIX file and the Visual Studio installer will take care of the rest.
 
 ### Prerequisites
 - [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2017 or 2019
