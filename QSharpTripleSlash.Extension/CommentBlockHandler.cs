@@ -20,6 +20,7 @@
  * ======================================================================== */
 
 using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -280,7 +281,10 @@ namespace QSharpTripleSlash.Extension
             }
 
             // Get a handle to the Visual Studio environment and the next handler in the chain
-            Dte = Provider.ServiceProvider.GetService<DTE, DTE>();
+            Dte = (DTE)Provider.ServiceProvider.GetService(typeof(DTE));
+            Assumes.Present(Dte);
+
+            // Get a handle to the Visual Studio environment and the next handler in the chain
             TextViewAdapter.AddCommandFilter(this, out NextCommandHandler);
             Logger.Debug($"{nameof(CommentBlockHandler)} initialized.");
         }
