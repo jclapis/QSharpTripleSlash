@@ -34,7 +34,7 @@ and as a standalone VSIX file in the [releases section](https://github.com/jclap
 Simply open the VSIX file and the Visual Studio installer will take care of the rest.
 
 ### Prerequisites
-- [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/) (support for 2017 is coming soon)
+- [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2017 or 2019
 - The [.NET Core runtime](https://dotnet.microsoft.com/download)
 - The [Quantum Development Kit](https://marketplace.visualstudio.com/items?itemName=quantum.DevKit)
 
@@ -50,10 +50,12 @@ More may be added based on demand.
 
 
 ## Building from Source
-This project is set up as a Visual Studio 2019 solution, so you will need that to compile it.
+This project is set up as a Visual Studio 2019 solution, but you can use 2017 or 2019 to compile it. You'll
+need to have the Visual Studio extension development workload installed, which you can add with the Visual
+Studio Installer. This will include the Visual Studio SDK.
 
 Prerequisites:
-- [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
+- [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2017 or 2019
 - [Visual Studio SDK](https://docs.microsoft.com/en-us/visualstudio/extensibility/visual-studio-sdk?view=vs-2019)
 - [.NET Core SDK](https://dotnet.microsoft.com/download)
 
