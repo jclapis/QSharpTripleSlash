@@ -34,7 +34,7 @@ and as a standalone VSIX file in the [releases section](https://github.com/jclap
 Simply open the VSIX file and the Visual Studio installer will take care of the rest.
 
 ### Prerequisites
-- [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2017 or 2019
+- [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/) (support for 2017 is coming soon)
 - The [.NET Core runtime](https://dotnet.microsoft.com/download)
 - The [Quantum Development Kit](https://marketplace.visualstudio.com/items?itemName=quantum.DevKit)
 
